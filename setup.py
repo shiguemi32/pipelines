@@ -12,7 +12,7 @@ with open('requirements.txt') as f:
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 NAME = 'pipeline-generator'
-with open('src/pipeline-generator/__init__.py', 'rt', encoding='utf8') as f:
+with open('pipeline/__init__.py', 'rt', encoding='utf8') as f:
     VERSION = re.search(r'__version__ = "(.*?)"', f.read()).group(1)
 DESCRIPTION = 'Generate kubeflow pipelines.'
 with open(os.path.join(HERE, 'README.md'), 'rt', encoding='utf8') as f:
