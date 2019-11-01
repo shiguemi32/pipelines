@@ -26,8 +26,8 @@ setup(
     long_description_content_type='text/markdown',
     author='Miguel Figueira Ferraz',
     url='https://github.com/platiagro/pipeline-generator',
-    packages=find_packages('src'),
-    package_dir={'': 'src'},
+    packages=find_packages('pipeline'),
+    package_dir={'': 'pipeline'},
     license='Apache License 2.0',
     install_requires=requirements
 )
