@@ -35,13 +35,15 @@ class PipelineResource(Resource):
                 dependencies = t['dependencies']
                 for d in dependencies:
                     dependence_id = None
+                    dependence = None
                     for key, value in object_components.items():
                         if value.component_name == d:
-                            dependence_id = key 
+                            dependence_id = key
+                            dependence = value 
                             break
                     if dependence_id is None:
                         return {"message": "Invalid dependence: {}.".format(d)}, 400
-                    object_components[i].add_dependence(dependence_id)
+                    object_components[i].add_dependence(dependence)
                     edges.append((dependence_id, i))
             except KeyError:
                 continue

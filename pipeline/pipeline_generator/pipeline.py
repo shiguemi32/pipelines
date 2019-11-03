@@ -16,26 +16,31 @@ class Pipeline():
         roots = [component.id for component in self.components.values() 
                  if not component.dependencies]
 
-        components = self.components   
+        components_objects = self.components
+
+        components_str = []
 
         def verify_level(level, components):
             if len(components) == 0:
                 return True
             for i in level:
-                if write_component(i, components):
-                    components.pop(i, None)
-                    if verify_level(self.adj[i], components):
+                if write_component(i, components_objects):
+                    components_objects.pop(i, None)
+                    if verify_level(self.adj[i], components_objects):
                         return True
             return False
 
         def write_component(node, components):
-            for d in self.components[node].dependencies:
-                if d in components.keys():
+            for d in components_objects[node].dependencies:
+                if d.id in components.keys():
                     return False
-            print(node) # TODO: Change to call a component method who returns the block of code
+            components_str.append(components_objects[node].write_component())
+
             return True
 
-        verify_level(roots, components)
+        verify_level(roots, components_objects)
+
+        components_code = ''.join(components_str)
 
         # TODO: Write the python script on a tmp file
 
