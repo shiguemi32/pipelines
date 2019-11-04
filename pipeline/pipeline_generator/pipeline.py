@@ -1,3 +1,4 @@
+import requests
 import os
 from collections import defaultdict
 from uuid import uuid4
@@ -19,6 +20,14 @@ class Pipeline():
         cwd = os.path.join(os.getcwd(), "pipelines_scripts/{}.py".format(self.pipeline_id))
 
         os.system('{} {}'.format('python', cwd))
+
+    def upload_pipeline(self):
+        url = 'http://127.0.0.1:31380/pipeline/apis/v1beta1/pipelines/upload?name={}'.format(self.pipeline_id)
+
+        path = 'pipelines_scripts/{}.py.zip'.format(self.pipeline_id)
+        files = {'uploadfile': open(path, 'rb')}
+
+        r = requests.post(url, files=files)
 
     def write_script(self):
         self.pipeline_id = uuid4()
