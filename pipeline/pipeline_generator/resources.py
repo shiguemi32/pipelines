@@ -25,8 +25,12 @@ class PipelineResource(Resource):
                 notebook_name = t['notebook_name']
             except KeyError:
                 return {"message": "Invalid data."}, 400
+            try:
+                image = t['image']
+            except KeyError:
+                image = 'platiagro/autosklearn-notebook:latest'
             if not key_exists(object_components, component_name):
-                object_components[i] = Component(i, component_name, notebook_name)
+                object_components[i] = Component(i, component_name, notebook_name, image)
             else:
                 return {"message": "Duplicate component."}, 400
 
