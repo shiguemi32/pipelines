@@ -1,4 +1,7 @@
+import os
 from collections import defaultdict
+from uuid import uuid4
+from .utils import write_on_boilerplate
 
 class Pipeline():
     ''' Implementing a basic graph structure for pipelines. '''
@@ -12,7 +15,14 @@ class Pipeline():
         for u, v in edges:
             self.adj[u].add(v)
 
+    def execute_script(self):
+        cwd = os.path.join(os.getcwd(), "pipelines_scripts/{}.py".format(self.pipeline_id))
+
+        os.system('{} {}'.format('python', cwd))
+
     def write_script(self):
+        self.pipeline_id = uuid4()
+
         roots = [component.id for component in self.components.values() 
                  if not component.dependencies]
 
@@ -41,9 +51,14 @@ class Pipeline():
         verify_level(roots, components_objects)
 
         components_code = ''.join(components_str)
+        stmt = write_on_boilerplate(components_code)
 
-        # TODO: Write the python script on a tmp file
+        path = 'pipelines_scripts/{}.py'.format(self.pipeline_id)
 
+        os.makedirs("pipelines_scripts", exist_ok=True)
+        with open(path, 'w') as file_object:
+            file_object.write(stmt)
+        
     def __len__(self):
         return len(self.adj)
 

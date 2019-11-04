@@ -50,3 +50,4 @@ class PipelineResource(Resource):
 
         pipeline = Pipeline(object_components, edges)
         pipeline.write_script()
+        pipeline.execute_script()
