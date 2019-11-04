@@ -64,4 +64,8 @@ class PipelineResource(Resource):
         pipeline = Pipeline(object_components, edges)
         pipeline.write_script()
         pipeline.execute_script()
-        pipeline.upload_pipeline()
+        try:
+            pipeline.upload_pipeline()
+            return {"message": "Pipeline successfully created!"}, 200
+        except:
+            return {"message": "Failed to connect to Kubeflow Pipelines API."}, 503

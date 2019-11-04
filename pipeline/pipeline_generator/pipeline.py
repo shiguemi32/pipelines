@@ -39,7 +39,11 @@ class Pipeline():
         path = 'pipelines_scripts/{}.py.zip'.format(self.pipeline_id)
         files = {'uploadfile': open(path, 'rb')}
 
-        r = requests.post(url, files=files)
+        try:
+            r = requests.post(url, files=files)
+        except requests.exceptions.RequestException as err:
+            print(err)
+            raise Exception('Failed to connect to Kubeflow Pipelines API.')
 
     def write_script(self):
         self.pipeline_id = uuid4()
