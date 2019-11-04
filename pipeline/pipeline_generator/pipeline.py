@@ -21,6 +21,18 @@ class Pipeline():
 
         os.system('{} {}'.format('python', cwd))
 
+    def get_parameters(self):
+        stmt = ''
+        parameters = []
+
+        for c in self.components.values():
+            for p in c.parameters:
+                if p.type != None and not p.name in parameters:
+                    stmt += '{}: {} = {},\n'.format(p.name, p.type, repr(p.default))
+                    parameters.append(p.name)
+
+        return stmt[:-2]
+
     def upload_pipeline(self):
         url = 'http://127.0.0.1:31380/pipeline/apis/v1beta1/pipelines/upload?name={}'.format(self.pipeline_id)
 
@@ -35,7 +47,7 @@ class Pipeline():
         roots = [component.id for component in self.components.values() 
                  if not component.dependencies]
 
-        components_objects = self.components
+        components_objects = dict.copy(self.components)
 
         components_str = []
 
@@ -60,7 +72,10 @@ class Pipeline():
         verify_level(roots, components_objects)
 
         components_code = ''.join(components_str)
-        stmt = write_on_boilerplate(components_code)
+
+        parameters = self.get_parameters()
+
+        stmt = write_on_boilerplate(components_code, parameters)
 
         path = 'pipelines_scripts/{}.py'.format(self.pipeline_id)
 

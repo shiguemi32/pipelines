@@ -1,6 +1,6 @@
-from textwrap import dedent
+from textwrap import dedent, indent
 
-def write_on_boilerplate(components):
+def write_on_boilerplate(components, parameters):
     stmt = dedent('''#!/usr/bin/env python3
 from kfp import dsl, compiler
 
@@ -12,14 +12,15 @@ from kfp import dsl, compiler
 def pipeline(
     experiment_id: str = "",
     bucket: str = "mlpipeline",
+{0}
 ):
     workflow_name = "{{workflow.name}}"
     pod_name = "{{pod.name}}"
-    {}
+    {1}
 
 if __name__ == "__main__":
     compiler.Compiler().compile(pipeline, __file__ + ".zip")
-'''.format(components))
+'''.format(indent(parameters, '    '), components))
 
     return stmt
 
