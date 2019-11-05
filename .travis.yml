@@ -9,3 +9,12 @@ install:
   - pip install -r requirements.txt
   - pip install pytest pytest-cov codecov
   - pip install -e .
+
+script:
+  - pytest --cov=pipeline --cov-report=xml
+
+after_script:
+  - codecov
+
+after_success:
+  - snyk monitor
