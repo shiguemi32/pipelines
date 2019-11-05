@@ -40,7 +40,7 @@ class Pipeline():
         files = {'uploadfile': open(path, 'rb')}
 
         try:
-            r = requests.post(url, files=files)
+            return requests.post(url, files=files)
         except requests.exceptions.RequestException as err:
             print(err)
             raise Exception('Failed to connect to Kubeflow Pipelines API.')
