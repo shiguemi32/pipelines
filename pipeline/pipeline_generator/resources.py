@@ -3,7 +3,6 @@ from flask_restful import Resource
 
 from .pipeline import Pipeline
 from .component import Component
-from .utils import key_exists
 
 # pylint: disable = inconsistent-return-statements
 
@@ -26,10 +25,7 @@ class PipelineResource(Resource):
             except KeyError:
                 return {"message": "Invalid data."}, 400
             image = t.get('image', 'platiagro/autosklearn-notebook:latest')
-            if not key_exists(object_components, component_name):
-                object_components[i] = Component(i, component_name, notebook_name, image)
-            else:
-                return {"message": "Duplicate component."}, 400
+            object_components[i] = Component(i, component_name, notebook_name, image)
 
         for i, t in enumerate(components):
             try:

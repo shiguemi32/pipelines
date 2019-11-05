@@ -23,8 +23,3 @@ if __name__ == "__main__":
 '''.format(indent(parameters, '    '), components))
 
     return stmt
-
-def key_exists(obj, key):
-    if key in obj.keys():
-        return True
-    return False
