@@ -1,11 +1,18 @@
 class Parameter():
-    def __init__(self, name):
+    def __init__(self, name, value, type, default):
         self.name = name
+        self.value = value
+        self.type = type
+        self.default = default
     
-    def read_parameter(self, parameter):
-        self.value = parameter.get('value')
-        self.type = parameter.get('type')
-        self.default = parameter.get('default')
+    @staticmethod
+    def read_parameter(parameter):
+        name = parameter.get('name')
+        value = parameter.get('value')
+        type = parameter.get('type')
+        default = parameter.get('default')
+
+        return Parameter(name, value, type, default)
 
     def write_parameter(self):
         stmt = ""

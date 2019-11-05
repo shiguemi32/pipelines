@@ -1,5 +1,7 @@
 from textwrap import indent
 
+from .parameter import Parameter
+
 class Component():
     def __init__(self, id, component_name, notebook_name, image):
         self.id = id
@@ -12,7 +14,8 @@ class Component():
     def add_dependence(self, dependence):
         self.dependencies.append(dependence)
 
-    def add_parameter(self, parameter):
+    def add_parameter(self, parameter_properties):
+        parameter = Parameter.read_parameter(parameter_properties)
         self.parameters.append(parameter)
 
     def write_component(self):

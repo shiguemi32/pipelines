@@ -3,7 +3,6 @@ from flask_restful import Resource
 
 from .pipeline import Pipeline
 from .component import Component
-from .parameter import Parameter
 from .utils import key_exists
 
 # pylint: disable = inconsistent-return-statements
@@ -54,10 +53,7 @@ class PipelineResource(Resource):
             try:
                 parameters = t['parameters']
                 for p in parameters:
-                    parameter = Parameter(p['name'])
-                    parameter.read_parameter(p)
-                    object_components[i].add_parameter(parameter)
-                    
+                    object_components[i].add_parameter(p)
             except KeyError:
                 continue
 
