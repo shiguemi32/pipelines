@@ -22,3 +22,5 @@ config = {
     'testing': TestingConfig,
     'default': DevelopmentConfig
 }
+
+KUBEFLOW_URL = getenv('KUBEFLOW_URL', default="http://ml-pipeline:8888/apis/v1beta1/")

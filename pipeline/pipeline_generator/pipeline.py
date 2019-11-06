@@ -2,6 +2,8 @@ import requests
 import os
 from collections import defaultdict
 from uuid import uuid4
+
+from config import KUBEFLOW_URL
 from .utils import write_on_boilerplate
 
 class Pipeline():
@@ -34,7 +36,7 @@ class Pipeline():
         return stmt[:-2]
 
     def upload_pipeline(self):
-        url = 'http://127.0.0.1:31380/pipeline/apis/v1beta1/pipelines/upload?name={}'.format(self.pipeline_id)
+        url = KUBEFLOW_URL + 'pipelines/upload?name={}'.format(self.pipeline_id)
 
         path = 'pipelines_scripts/{}.py.zip'.format(self.pipeline_id)
         files = {'uploadfile': open(path, 'rb')}
