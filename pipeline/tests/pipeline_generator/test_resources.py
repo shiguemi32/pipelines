@@ -34,11 +34,11 @@ class TestPipelineResource(unittest.TestCase):
             "components": [
                 {
                     "component_name": "filter",
-                    "notebook_name": "Filter",
+                    "notebook_path": "s3://mlpipeline/components/6c1f7876-8c51-4b4b-a3f0-e9b8ea5e4ac7/Filter.ipynb",
                 },
                 {
                     "component_name": "automl",
-                    "notebook_name": "AutoML",
+                    "notebook_path": "s3://mlpipeline/components/2818414a-67e5-412d-9868-6ffd23f9b581/AutoML.ipynb",
                     "dependencies": ["filtera"],
                 }
             ]
@@ -53,11 +53,11 @@ class TestPipelineResource(unittest.TestCase):
             "components": [
                 {
                     "component_name": "filter",
-                    "notebook_name": "Filter",
+                    "notebook_path": "s3://mlpipeline/components/6c1f7876-8c51-4b4b-a3f0-e9b8ea5e4ac7/Filter.ipynb",
                 },
                 {
                     "component_name": "automl",
-                    "notebook_name": "AutoML",
+                    "notebook_path": "s3://mlpipeline/components/2818414a-67e5-412d-9868-6ffd23f9b581/AutoML.ipynb",
                     "dependencies": ["filter"],
                     "parameters": [
                         {
@@ -82,11 +82,11 @@ class TestPipelineResource(unittest.TestCase):
             "components": [
                 {
                     "component_name": "filter",
-                    "notebook_name": "Filter",
+                    "notebook_path": "s3://mlpipeline/components/6c1f7876-8c51-4b4b-a3f0-e9b8ea5e4ac7/Filter.ipynb",
                 },
                 {
                     "component_name": "automl",
-                    "notebook_name": "AutoML",
+                    "notebook_path": "s3://mlpipeline/components/2818414a-67e5-412d-9868-6ffd23f9b581/AutoML.ipynb",
                     "dependencies": ["filter"],
                     "parameters": [
                         {

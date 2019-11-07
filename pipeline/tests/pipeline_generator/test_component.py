@@ -8,12 +8,12 @@ from pipeline.pipeline_generator.parameter import Parameter
 class TestComponentMethods(unittest.TestCase):
     def test_add_dependence(self):
         component = Component(0, 'test', 'Test', 'test')
-        dep = Component(1, 'dep', 'Dep', 'dep')
+        dep = Component(1, 'dep', 's3://mlpipeline/components/2818414a-67e5-412d-9868-6ffd23f9b581/Dep.ipynb', 'dep')
 
         component.add_dependence(dep)
 
         self.assertTrue(isinstance(component.dependencies[0], Component))
-        self.assertEqual(str(component.dependencies[0]), 'id: 1, component_name: dep, notebook_name: Dep, dependencies: []')
+        self.assertEqual(str(component.dependencies[0]), 'id: 1, component_name: dep, notebook_path: s3://mlpipeline/components/2818414a-67e5-412d-9868-6ffd23f9b581/Dep.ipynb, dependencies: []')
 
     def test_parameter(self):
         component = Component(0, 'test', 'Test', 'test')
@@ -28,8 +28,8 @@ class TestComponentMethods(unittest.TestCase):
         self.assertTrue(isinstance(component.parameters[0], Parameter))
 
     def test_write_component(self):
-        component = Component(0, 'test', 'Test', 'test')
-        dep = Component(1, 'dep', 'Dep', 'dep')
+        component = Component(0, 'test', 's3://mlpipeline/components/6c1f7876-8c51-4b4b-a3f0-e9b8ea5e4ac7/Test.ipynb', 'test')
+        dep = Component(1, 'dep', 's3://mlpipeline/components/2818414a-67e5-412d-9868-6ffd23f9b581/Dep.ipynb', 'dep')
 
         component.add_parameter({
             "name": "test",
@@ -40,7 +40,7 @@ class TestComponentMethods(unittest.TestCase):
         component.add_dependence(dep)
 
         self.assertEqual(component.write_component(), '''
-    notebook_path = \"s3://mlpipeline/test/Test.ipynb\"
+    notebook_path = \"s3://mlpipeline/components/6c1f7876-8c51-4b4b-a3f0-e9b8ea5e4ac7/Test.ipynb\"
     output_path = \"s3://mlpipeline/{}/Test.ipynb\".format(experiment_id)
     test = dsl.ContainerOp(
         name=\"test\",

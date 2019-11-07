@@ -52,5 +52,5 @@ output_path = \"{4}\".format(experiment_id)
         return stmt
 
     def __str__(self):
-        return '''id: {0}, component_name: {1}, notebook_name: {2}, dependencies: {3}'''.format(
-            self.id, self.component_name, self.notebook_name, self.dependencies)
+        return '''id: {0}, component_name: {1}, notebook_path: {2}, dependencies: {3}'''.format(
+            self.id, self.component_name, self.notebook_path, self.dependencies)

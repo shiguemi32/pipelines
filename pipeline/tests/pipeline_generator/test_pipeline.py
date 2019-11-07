@@ -12,15 +12,15 @@ from pipeline.pipeline_generator.parameter import Parameter
 
 class TestPipelineMethods(unittest.TestCase):
     def test_add_edges(self):
-        component = Component(0, 'test', 'Test', 'test')
-        component1 = Component(1, 'test1', 'Test1', 'test')
+        component = Component(0, 'test', 's3://mlpipeline/components/6c1f7876-8c51-4b4b-a3f0-e9b8ea5e4ac7/Test.ipynb', 'test')
+        component1 = Component(1, 'test1', 's3://mlpipeline/components/f1d45b60-76d8-4637-9254-94852031c8b0/Test1.ipynb', 'test')
 
         pipeline = Pipeline({0: component, 1: component1}, [(0, 1)])
 
         self.assertEqual(pipeline.adj.get(0), {1})
 
     def test_get_parameters(self):
-        component = Component(0, 'test', 'Test', 'test')
+        component = Component(0, 'test', 's3://mlpipeline/components/6c1f7876-8c51-4b4b-a3f0-e9b8ea5e4ac7/Test.ipynb', 'test')
 
         component.add_parameter({
             "name": "test",
@@ -35,9 +35,9 @@ class TestPipelineMethods(unittest.TestCase):
 
     @patch('pipeline.pipeline_generator.pipeline.requests.post')
     def test_write_and_execute_script(self, mock_post):
-        component = Component(0, 'test', 'Test', 'test')
-        component1 = Component(1, 'test1', 'Test1', 'test')
-        component2 = Component(2, 'test2', 'Test2', 'test')
+        component = Component(0, 'test', 's3://mlpipeline/components/6c1f7876-8c51-4b4b-a3f0-e9b8ea5e4ac7/Test.ipynb', 'test')
+        component1 = Component(1, 'test1', 's3://mlpipeline/components/f1d45b60-76d8-4637-9254-94852031c8b0/Test1.ipynb', 'test')
+        component2 = Component(2, 'test2', 's3://mlpipeline/components/739082d4-819d-4c42-81fa-691a309b5e21/Test2.ipynb', 'test')
 
         component1.add_dependence(component)
         component1.add_dependence(component2)
@@ -79,24 +79,24 @@ class TestPipelineMethods(unittest.TestCase):
         os.remove(path + '.zip')
 
     def test_len(self):
-        component = Component(0, 'test', 'Test', 'test')
-        component1 = Component(1, 'test1', 'Test1', 'test')
+        component = Component(0, 'test', 's3://mlpipeline/components/6c1f7876-8c51-4b4b-a3f0-e9b8ea5e4ac7/Test.ipynb', 'test')
+        component1 = Component(1, 'test1', 's3://mlpipeline/components/f1d45b60-76d8-4637-9254-94852031c8b0/Test1.ipynb', 'test')
 
         pipeline = Pipeline({0: component, 1: component1}, [(0, 1)])
 
         self.assertEqual(len(pipeline), 1)
 
     def test_str(self):
-        component = Component(0, 'test', 'Test', 'test')
-        component1 = Component(1, 'test1', 'Test1', 'test')
+        component = Component(0, 'test', 's3://mlpipeline/components/6c1f7876-8c51-4b4b-a3f0-e9b8ea5e4ac7/Test.ipynb', 'test')
+        component1 = Component(1, 'test1', 's3://mlpipeline/components/f1d45b60-76d8-4637-9254-94852031c8b0/Test1.ipynb', 'test')
 
         pipeline = Pipeline({0: component, 1: component1}, [(0, 1)])
 
         self.assertEqual(str(pipeline), 'Pipeline({0: {1}})')
 
     def test_getitem(self):
-        component = Component(0, 'test', 'Test', 'test')
-        component1 = Component(1, 'test1', 'Test1', 'test')
+        component = Component(0, 'test', 's3://mlpipeline/components/6c1f7876-8c51-4b4b-a3f0-e9b8ea5e4ac7/Test.ipynb', 'test')
+        component1 = Component(1, 'test1', 's3://mlpipeline/components/f1d45b60-76d8-4637-9254-94852031c8b0/Test1.ipynb', 'test')
 
         pipeline = Pipeline({0: component, 1: component1}, [(0, 1)])
 
