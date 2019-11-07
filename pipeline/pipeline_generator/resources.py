@@ -25,7 +25,7 @@ class PipelineResource(Resource):
                 notebook_path = t['notebook_path']          
             except KeyError:
                 return {"message": "Invalid data."}, 400
-            image = t.get('image', 'platiagro/autosklearn-notebook:latest')
+            image = t.get('image', 'platiagro/datascience-notebook:latest')
             object_components[i] = Component(i, component_name, notebook_path, image)
 
         for i, t in enumerate(components):
