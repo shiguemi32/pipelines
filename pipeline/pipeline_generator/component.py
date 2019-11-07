@@ -22,6 +22,7 @@ class Component():
         parameters = str('\n'.join([p.write_parameter() for p in self.parameters]))   
 
         output_path = self.notebook_path.split('/')
+        del output_path[-2]
         output_path[-2] = '{}'
         output_path = '/'.join(output_path) 
 
