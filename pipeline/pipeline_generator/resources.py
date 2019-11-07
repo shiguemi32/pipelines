@@ -3,6 +3,7 @@ from flask_restful import Resource
 
 from .pipeline import Pipeline
 from .component import Component
+from .utils import normalize_string
 
 # pylint: disable = inconsistent-return-statements
 
@@ -20,17 +21,18 @@ class PipelineResource(Resource):
 
         for i, t in enumerate(components):
             try:
-                component_name = t['component_name']
-                notebook_name = t['notebook_name']
+                component_name = normalize_string(t['component_name'])
+                notebook_path = t['notebook_path']          
             except KeyError:
                 return {"message": "Invalid data."}, 400
             image = t.get('image', 'platiagro/autosklearn-notebook:latest')
-            object_components[i] = Component(i, component_name, notebook_name, image)
+            object_components[i] = Component(i, component_name, notebook_path, image)
 
         for i, t in enumerate(components):
             try:
                 dependencies = t['dependencies']
                 for d in dependencies:
+                    d = normalize_string(d)
                     dependence_id = None
                     dependence = None
                     for key, value in object_components.items():

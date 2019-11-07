@@ -3,10 +3,10 @@ from textwrap import indent
 from .parameter import Parameter
 
 class Component():
-    def __init__(self, id, component_name, notebook_name, image):
+    def __init__(self, id, component_name, notebook_path, image):
         self.id = id
         self.component_name = component_name
-        self.notebook_name = notebook_name
+        self.notebook_path = notebook_path
         self.image = image
         self.dependencies = []
         self.parameters = []
@@ -19,11 +19,15 @@ class Component():
         self.parameters.append(parameter)
 
     def write_component(self):
-        parameters = str('\n'.join([p.write_parameter() for p in self.parameters]))    
+        parameters = str('\n'.join([p.write_parameter() for p in self.parameters]))   
+
+        output_path = self.notebook_path.split('/')
+        output_path[-2] = '{}'
+        output_path = '/'.join(output_path) 
 
         stmt = indent('''
-notebook_path = \"s3://mlpipeline/{0}/{1}.ipynb\"
-output_path = \"s3://mlpipeline/{{}}/{1}.ipynb\".format(experiment_id)
+notebook_path = \"{1}\"
+output_path = \"{4}\".format(experiment_id)
 {0} = dsl.ContainerOp(
     name=\"{0}\",
     image=\"{2}\",
@@ -36,8 +40,9 @@ output_path = \"s3://mlpipeline/{{}}/{1}.ipynb\".format(experiment_id)
         \"-p\", \"pod_name\", pod_name,
 {3}
     ],
-)'''.format(self.component_name, self.notebook_name, 
-            self.image, indent(parameters, '        ')), '    ')
+)'''.format(self.component_name, self.notebook_path, 
+            self.image, indent(parameters, '        '),
+            output_path), '    ')
 
         if self.dependencies:
             dependecies = str(", ".join([d.component_name for d in self.dependencies]))
