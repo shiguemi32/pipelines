@@ -21,6 +21,9 @@ def get_requirements(reqfile):
         requirements = f.read().splitlines()
         return requirements
 
+extras = {
+    "testing": get_requirements('requirements/requirements.test.txt')
+}
 
 setup(
     name=NAME,
@@ -32,6 +35,7 @@ setup(
 
     packages=find_packages(),
     install_requires=get_requirements('requirements/requirements.txt'),
+    extras_require=extras,
 
     author='Miguel Figueira Ferraz',
     author_email='mferraz@cpqd.com.br',

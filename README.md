@@ -42,3 +42,17 @@ Run it :
 $ pip install .
 $ python -m pipelines.api
 ```
+
+## Testing
+
+Firstly install the requirements:
+
+```bash
+$ pip install .[testing]
+```
+
+Then run all the tests:
+
+```bash
+$ pytest
+```
