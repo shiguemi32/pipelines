@@ -2,7 +2,7 @@ import kfp
 import kfp.compiler as compiler
 import kfp.dsl as dsl
 
-from .utils import normalize_string
+from .utils import normalize_string, validate_parameter
 from .component import Component
 
 class Pipeline():
@@ -18,7 +18,7 @@ class Pipeline():
         self.experiment = experiment
 
     def _init_client(self):
-        return kfp.Client('0.0.0.0:31380/pipeline')
+        return kfp.Client('10.50.11.204:31380/pipeline')
 
     def _init_components(self, components):
         components_objects = []
@@ -27,11 +27,18 @@ class Pipeline():
             try:
                 component_name = normalize_string(component['component_name'])
                 notebook_path = component['notebook_path']
+                parameters = component.get('parameters', None)
+                
+                # Validate parameters
+                if parameters:
+                    for p in parameters:
+                        if not validate_parameter(p):
+                            raise ValueError('Invalid parameter.')
+
+                components_objects.append(
+                Component(index, component_name, notebook_path, parameters))
             except KeyError:
                 raise ValueError('Invalid component.')
-
-            components_objects.append(
-                Component(index, component_name, notebook_path))
 
         return components_objects
 
