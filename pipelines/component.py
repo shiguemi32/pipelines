@@ -9,9 +9,11 @@ class Component():
         self.id = id
         self.component_name = component_name
         self.notebook_path = notebook_path
+
         self.parameters = parameters
-        self.dependencies = []
         self.container_op = None
+
+        self.set_output_files()
 
     def _create_component_yaml(self):
         path = lambda file: os.path.join(os.path.dirname(__file__), 'resources', file)
@@ -46,10 +48,19 @@ class Component():
 
         self.container_op = container(
             notebook_path=notebook_path,
-            output_path=output_path).set_image_pull_policy('Always')
+            output_path=output_path,
+            in_csv=self.in_csv,
+            in_txt=self.in_txt,
+            out_csv=self.out_csv,
+            out_txt=self.out_txt).set_image_pull_policy('Always')
             
-    def add_dependency(self, dependency):
-        self.dependencies.append(dependency)
+    def set_output_files(self):
+        self.out_csv = self.component_name + '.csv'
+        self.out_txt = self.component_name + '.txt'
+
+    def set_input_files(self, csv, txt):
+        self.in_csv = csv
+        self.in_txt = txt
 
     def __str__(self):
         return '''id: {0}, component_name: {1}, notebook_path: {2}, dependencies: {3}'''.format(

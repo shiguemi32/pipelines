@@ -3,13 +3,26 @@ description: Parametrize and execute Jupyter notebooks
 inputs:
   - {name: Notebook Path, type: String, default: "", description: "Action to execute on KFServing"}
   - {name: Output Path, type: String, default: "", description: "Name to give to the deployed model"}
+  - {name: In Csv, type: String, default: "", description: ""}
+  - {name: In Txt, type: String, default: "", description: ""}
+  - {name: Out Csv, type: String, default: "", description: ""}
+  - {name: Out Txt, type: String, default: "", description: ""}
 implementation:
   container:
     image: platiagro/datascience-notebook:latest
-    command: ["python"]
-    args:
-      [
-        -u, kfservingdeployer.py,
-        --notebook-path,      {inputValue: Notebook Path},
-        --output-path,        {inputValue: Output Path},
-      ]
+    command: [papermill,
+      {inputValue: Notebook Path},
+      {inputValue: Output Path},
+      -p,
+      in_csv,
+      {inputValue: In Csv},
+      -p,
+      in_txt,
+      {inputValue: In Txt},
+      -p,
+      out_csv,
+      {inputValue: Out Csv},
+      -p,
+      out_txt,
+      {inputValue: Out Txt},
+    ]
