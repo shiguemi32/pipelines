@@ -56,3 +56,42 @@ Then run all the tests:
 ```bash
 $ pytest
 ```
+
+## API
+
+API usage examples.
+
+### Train Pipeline
+
+method: POST
+url: /v1/pipelines
+
+```
+curl -X POST \
+  http://localhost:8080/pipelines \
+  --H 'content-type: application/json' \
+  --d '{
+	"experiment_id": "b1596851-3951-42ea-bd60-6b7e9ef25d72",
+	"csv": "dataset.csv",
+	"txt": "header.txt",
+	"components": [
+		{
+			"component_name": "Filter",
+		 	"notebook_path": "Filter.ipynb",
+		},
+		{
+			"component_name": "AutoML",
+		 	"notebook_path": "AutoML.ipynb"
+            "parameters": [
+                {
+                    "name": "price",
+                    "type": "Int",
+                    "value": "3"
+                }
+            ]
+        }
+	]
+}'
+```
+
+This endpoint creates a pipeline following the components list order.
