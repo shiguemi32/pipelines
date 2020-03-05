@@ -1,3 +1,4 @@
 Flask==1.1.1
+Flask-Cors==3.0.8
 kfp==0.2.0
 schema==0.7.1

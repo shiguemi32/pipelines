@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import yaml
 
@@ -5,10 +6,13 @@ from kfp import components, dsl
 
 
 class Component():
-    def __init__(self, id, component_name, notebook_path, parameters):
+    def __init__(self, id, component_name, notebook_path, parameters, csv, txt):
         self.id = id
         self.component_name = component_name
         self.notebook_path = notebook_path
+
+        self.in_csv = csv
+        self.in_txt = txt
 
         self.parameters = parameters
         self.container_op = None
@@ -25,10 +29,11 @@ class Component():
                 template = yaml.full_load(f.read())
 
             for parameter in self.parameters:
-                template['implementation']['container']['command'].append('-p')
-                template['implementation']['container']['command'].append(parameter['name'])
-                template['implementation']['container']['command'].append(str(parameter['value']))
+                template['inputs'].append({"name": parameter['name'], "type": parameter['type'], "default": ""})
 
+                template['implementation']['container']['command'].extend(['-p', parameter['name'], str(parameter['value'])])
+
+            template['name'] = self.component_name
 
             file_path = path('{}.yaml'.format(self.component_name))
 
@@ -57,10 +62,6 @@ class Component():
     def set_output_files(self):
         self.out_csv = self.component_name + '.csv'
         self.out_txt = self.component_name + '.txt'
-
-    def set_input_files(self, csv, txt):
-        self.in_csv = csv
-        self.in_txt = txt
 
     def __str__(self):
         return '''id: {0}, component_name: {1}, notebook_path: {2}, dependencies: {3}'''.format(

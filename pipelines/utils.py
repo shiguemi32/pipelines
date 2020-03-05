@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from re import sub
 
 from unicodedata import normalize
