@@ -18,7 +18,7 @@ with open(os.path.join(HERE, 'README.md'), 'rt', encoding='utf8') as f:
 def get_requirements(reqfile):
     path = os.path.join(HERE, reqfile)
     with open(path) as f:
-        return f.read().splitlines(
+        return f.read().splitlines()
 
 extras = {
     "testing": get_requirements('requirements/requirements.test.txt')
