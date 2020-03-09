@@ -1,26 +1,23 @@
 # -*- coding: utf-8 -*-
-from schema import Schema, And, SchemaMissingKeyError
 from werkzeug.exceptions import BadRequest
 
 from .pipeline import Pipeline
-
-train_pipeline_schema = Schema({
-    'experiment_id': And(str),
-    'csv': And(str),
-    'txt': And(str),
-    'components': And(list)
-    })
+from .utils import validate_train_pipeline
 
 def train_pipeline(request):
     req_data = request.get_json() or None
 
     try:
         # Validate request body schema
-        train_pipeline_schema.validate(req_data)
+        if not validate_train_pipeline(req_data):
+            raise BadRequest('Invalid request.')
 
         pipeline = Pipeline(
             req_data['experiment_id'],
             req_data['components'],
+        )
+
+        pipeline.set_input_files(
             req_data['csv'],
             req_data['txt']
         )
@@ -32,7 +29,4 @@ def train_pipeline(request):
 
     except ValueError as err: 
         raise BadRequest('Invalid data: {}'.format(err))
-
-    except SchemaMissingKeyError as err:
-        raise BadRequest(err)
     

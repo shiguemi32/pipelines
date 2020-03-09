@@ -24,9 +24,36 @@ parameter_schema = Schema({
     Optional('description'): str
 })
 
-def validate_parameter(parameter):
+def validate_parameters(parameters):
     try:
-        parameter_schema.validate(parameter)
+        for parameter in parameters:
+            parameter_schema.validate(parameter)
         return True
-    except SchemaError as err:
+    except SchemaError:
+        return False
+
+train_pipeline_schema = Schema({
+    'experiment_id': str,
+    'csv': str,
+    'txt': str,
+    'components': list
+})
+
+def validate_train_pipeline(pipeline):
+    try:
+        train_pipeline_schema.validate(pipeline)
+        return True
+    except SchemaError:
+        return False
+
+deploy_pipeline_schema = Schema({
+    'experiment_id': str,
+    'components': list
+})
+
+def validate_deploy_pipeline(pipeline):
+    try:
+        deploy_pipeline_schema.validate(pipeline)
+        return True
+    except SchemaError:
         return False

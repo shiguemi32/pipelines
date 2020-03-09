@@ -4,20 +4,40 @@ import yaml
 
 from kfp import components, dsl
 
+from .resources.templates import COMPONENT_SPEC, GRAPH
 
 class Component():
-    def __init__(self, id, component_name, notebook_path, parameters, csv, txt):
-        self.id = id
+    def __init__(self, component_name, notebook_path, parameters, prev):
         self.component_name = component_name
         self.notebook_path = notebook_path
-
-        self.in_csv = csv
-        self.in_txt = txt
 
         self.parameters = parameters
         self.container_op = None
 
+        self.image = "platiagro/datascience-notebook:latest"
+
+        self.next = None
+        self.prev = prev
+
         self.set_output_files()
+
+    def create_component_spec(self):
+        component_spec = COMPONENT_SPEC.substitute({
+            "image": self.image,
+            "name": self.component_name
+        })
+        
+        return component_spec
+
+    def create_component_graph(self):
+        component_graph = GRAPH.substitute({
+            "name": self.component_name,
+            "type": "TRANSFORMER" if self.next else "MODEL",
+            "children": self.next.create_component_graph() if self.next else ""
+        })
+
+        return component_graph
+
 
     def _create_component_yaml(self):
         path = lambda file: os.path.join(os.path.dirname(__file__), 'resources', file)
@@ -58,12 +78,14 @@ class Component():
             in_txt=self.in_txt,
             out_csv=self.out_csv,
             out_txt=self.out_txt).set_image_pull_policy('Always')
+        
+    def set_next_component(self, next_component):
+        self.next = next_component
             
+    def set_input_files(self, csv, txt):
+        self.in_csv = csv
+        self.in_txt = txt
+
     def set_output_files(self):
         self.out_csv = self.component_name + '.csv'
         self.out_txt = self.component_name + '.txt'
-
-    def __str__(self):
-        return '''id: {0}, component_name: {1}, notebook_path: {2}, dependencies: {3}'''.format(
-            self.id, self.component_name, self.notebook_path,
-            self.dependencies)
