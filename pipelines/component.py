@@ -3,7 +3,9 @@ import os
 import yaml
 
 from kfp import components, dsl
+from nbconvert import PythonExporter
 
+from .minio import load_notebook
 from .resources.templates import COMPONENT_SPEC, GRAPH
 
 class Component():
@@ -21,7 +23,14 @@ class Component():
 
         self.set_output_files()
 
+    def _generate_component_image(self):
+        notebook = load_notebook(self.notebook_path)
+        
+        pass
+
     def create_component_spec(self):
+        self._generate_component_image()
+
         component_spec = COMPONENT_SPEC.substitute({
             "image": self.image,
             "name": self.component_name
