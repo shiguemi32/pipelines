@@ -12,31 +12,35 @@ from .deploy import deploy_pipeline
 
 app = Flask(__name__)
 
-
 @app.route('/', methods=['GET'])
 def index():
     """Handles GET requests to /."""
     return jsonify(message='PlatIAgro Pipelines v0.0.1')
 
-
 @app.route('/train', methods=['POST'])
 def handle_train_pipeline():
     """Handles POST requests to /train."""
-    return jsonify(train_pipeline(request))
-
+    req_data = request.get_json()
+    run_id = train_pipeline(req_data)
+    return jsonify({"message": "Pipeline running.", "runId": run_id})
 
 @app.route('/deploy', methods=['POST'])
 def handle_deploy_pipeline():
     """Handles POST requests to /deploy."""
-    return jsonify(deploy_pipeline(request))
-
+    req_data = request.get_json()
+    experiment_id = req_data.get('experiment_id')
+    components = req_data.get('components')
+    dataset = req_data.get('dataset')
+    target = req_data.get('target')
+    return jsonify(
+        deploy_pipeline(experiment_id, components, dataset, target)
+    )
 
 @app.errorhandler(BadRequest)
 @app.errorhandler(InternalServerError)
 def handle_errors(err):
     """Handles exceptions raised by the API."""
     return jsonify({"message": err.description}), err.code
-
 
 def parse_args(args):
     """Takes argv and parses API options."""
@@ -48,7 +52,6 @@ def parse_args(args):
     )
     parser.add_argument("--enable-cors", action="count")
     return parser.parse_args(args)
-
 
 if __name__ == "__main__":
     args = parse_args(sys.argv[1:])

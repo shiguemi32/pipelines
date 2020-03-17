@@ -2,56 +2,95 @@
 import json
 
 from kfp import compiler, dsl, Client
+from werkzeug.exceptions import BadRequest
 
-from .utils import normalize_string, validate_parameters
+from .utils import normalize_string, validate_component, validate_parameters
 from .resources.templates import SELDON_DEPLOYMENT
 from .component import Component
 
 class Pipeline():
-    def __init__(self, experiment_id, components):
-        self.first = self._init_components(components)
+    """Represents a KubeFlow Pipeline.
+    
+    Train or deploy in KubeFlow the given pipeline.
+    """
 
-        self.client = self._init_client()
+    def __init__(self, experiment_id, components, dataset, target):
+        """Create a new instance of Pipeline.
         
-        self.experiment_id = experiment_id
-        self.experiment = self.client.create_experiment(name=experiment_id)
+        Args:
+            experiment_id (str): PlatIAgro experiment's uuid.
+            components (list): list of pipeline components.
+            dataset (str): dataset id.
+            target (str): target column from dataset.
+        """
+        # Instantiate pipeline's components
+        self._first = self._init_components(components)
+
+        self._dataset = dataset
+        self._target = target
+
+        self._client = self._init_client()
+        
+        self._experiment_id = experiment_id
+        self._experiment = self._client.create_experiment(name=experiment_id)
 
     def _init_client(self):
-        return Client('10.50.11.143:31380/pipeline')
+        """Create a new kfp client. 
+        
+        Returns:
+            An instance of kfp client.
+        """
+        return Client('0.0.0.0:31380/pipeline')
 
     def _init_components(self, raw_components):
-        for i, component in enumerate(raw_components):
-            try:
-                component_name = normalize_string(component['component_name'])
-                notebook_path = component['notebook_path']
+        """Instantiate the given components.
 
-                parameters = component.get('parameters', None)
-                
-                # Validate parameters
-                if parameters:
-                    if not validate_parameters(parameters):
-                        raise ValueError('Invalid parameter.')
+        Args:
+            raw_components (list): list of component objects.
 
-                if i == 0:
-                    first = Component(component_name, notebook_path, parameters, None)
-                    previous = first
-                else:
-                    current_component = Component(component_name, notebook_path, parameters, previous)
-                    previous.set_next_component(current_component)
-                    previous = current_component
+        Component objects format:
+            name (str): component name.
+            type (str): component type (str, int, float).
+            value (component type): current component value.
 
-            except KeyError:
-                raise ValueError('Invalid component.')
+        Returns:
+            The first component from this pipeline.
+        """
+        previous = None
+
+        for index, component in enumerate(raw_components):
+            # check if component are in the correct format
+            if not validate_component(component):
+                raise BadRequest('Invalid request.')
+
+            component_name = normalize_string(component.get('component_name'))
+            notebook_path = component.get('notebook_path')
+
+            parameters = component.get('parameters', None)
+            # validate parameters
+            if parameters:
+                if not validate_parameters(parameters):
+                    raise ValueError('Invalid parameter.')
+
+            if index == 0:
+                # store the first component from pipeline
+                first = Component(component_name, notebook_path, parameters, None)
+                previous = first
+            else:
+                current_component = Component(component_name, notebook_path, parameters, previous)
+                previous.set_next_component(current_component)
+                previous = current_component
 
         return first
 
-    def set_input_files(self, csv, txt):
-        self.csv = csv
-        self.txt = txt
-
     def _create_component_specs_json(self):
+        """Create KubeFlow specs to each component from this pipeline.
+
+        Returns:
+            A string in JSON format with the specs of each component.
+        """
         specs = []
-        component = self.first
+        component = self._first
 
         while component:
             specs.append(component.create_component_spec())
@@ -60,20 +99,26 @@ class Pipeline():
         return ",".join(specs)
 
     def _create_graph_json(self):
+        """Create a KubeFlow Graph in JSON format from this pipeline. 
+        
+        Returns:
+            A string in JSON format describing this pipeline.
+        """
         return self.first.create_component_graph()
 
     def compile_train_pipeline(self):
+        """Compile the pipeline in a train format."""
         @dsl.pipeline(name='Common pipeline')
         def train_pipeline():
             prev = None
-            component = self.first
+            component = self._first
 
             while component:
-                #Set input files of component
+                # set input file of component
                 if prev:
-                    component.set_input_files(prev.out_csv, prev.out_txt)
+                    component.set_input_file(prev.out_dataset, prev.target)
                 else:
-                    component.set_input_files(self.csv, self.txt)
+                    component.set_input_file(self._dataset, self._target)
 
                 component.create_container_op()
 
@@ -83,9 +128,10 @@ class Pipeline():
                 prev = component
                 component = component.next
 
-            compiler.Compiler().compile(train_pipeline, 'result.tar.gz')
+        compiler.Compiler().compile(train_pipeline, 'result.tar.gz')
 
     def compile_deploy_pipeline(self):
+        """Compile pipeline in a deploy format."""
         component_specs = self._create_component_specs_json()
         graph = self._create_graph_json()
 
@@ -99,8 +145,6 @@ class Pipeline():
                 "graph": graph
             })
 
-            print(seldonserving)
-
             seldon_deployment = json.loads(seldonserving)
             serve_op = dsl.ResourceOp(
                 name="deploy",
@@ -111,8 +155,16 @@ class Pipeline():
         compiler.Compiler().compile(deploy_pipeline, 'deploy.tar.gz')
 
     def upload_pipeline(self):
-        upload = self.client.upload_pipeline('deploy.tar.gz', self.experiment_id)
+        """Upload this pipeline to KubeFlow instance."""
+        upload = self._client.upload_pipeline('deploy.tar.gz', self._experiment_id)
 
     def run_pipeline(self):
-        run = self.client.run_pipeline(self.experiment.id, 'result',
+        """Run this pipeline on the KubeFlow instance. 
+        
+        Returns:
+            KubeFlow run object.
+        """
+        run = self._client.run_pipeline(self._experiment.id, 'result',
                                        'result.tar.gz')
+
+        return run.id

@@ -4,9 +4,9 @@ inputs:
   - {name: Notebook Path, type: String, default: "", description: "Action to execute on KFServing"}
   - {name: Output Path, type: String, default: "", description: "Name to give to the deployed model"}
   - {name: In Csv, type: String, default: "", description: ""}
-  - {name: In Txt, type: String, default: "", description: ""}
-  - {name: Out Csv, type: String, default: "", description: ""}
-  - {name: Out Txt, type: String, default: "", description: ""}
+  - {name: Dataset, type: String, default: "", description: ""}
+  - {name: Target, type: String, default: "", description: ""}
+  - {name: Out Dataset, type: String, default: "", description: ""}
 implementation:
   container:
     image: platiagro/datascience-notebook:latest
@@ -14,15 +14,12 @@ implementation:
       {inputValue: Notebook Path},
       {inputValue: Output Path},
       -p,
-      in_csv,
-      {inputValue: In Csv},
+      dataset,
+      {inputValue: Dataset},
       -p,
-      in_txt,
-      {inputValue: In Txt},
+      target,
+      {inputValue: Target},
       -p,
-      out_csv,
-      {inputValue: Out Csv},
-      -p,
-      out_txt,
-      {inputValue: Out Txt},
+      out_dataset,
+      {inputValue: Out Dataset}
     ]

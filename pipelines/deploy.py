@@ -1,25 +1,30 @@
 # -*- coding: utf-8 -*-
-from werkzeug.exceptions import BadRequest
 
 from .pipeline import Pipeline
-from .utils import validate_deploy_pipeline
 
-def deploy_pipeline(request):
-    req_data = request.get_json() or None
+def deploy_pipeline(pipeline_parameters):
+    """Compile and run a deployment pipeline.
 
+    Args:
+        pipeline_parameters (dict): request body json, format:
+            experiment_id (str): PlatIAgro experiment's uuid.
+            components (list): list of pipeline components.
+            dataset (str): dataset id.
+            target (str): target column from dataset.
+    """
     try:
-        if not validate_deploy_pipeline(req_data):
-            raise BadRequest('Invalid request.')
-
-        pipeline = Pipeline(
-            req_data['experiment_id'],
-            req_data['components']
+        experiment_id = pipeline_parameters['experiment_id']
+        components = pipeline_parameters['components']
+        dataset = pipeline_parameters['dataset']
+        target = pipeline_parameters['target']
+    except KeyError as e:
+        raise BadRequest(
+            'Invalid request body, missing the parameter: {}'.format(e)
         )
 
-        pipeline.compile_deploy_pipeline()
-        pipeline.upload_pipeline()
+    pipeline = Pipeline(experiment_id, components)
 
-        return {'message': 'Pipeline successfully uploaded.'}
+    pipeline.compile_deploy_pipeline()
+    
+    pipeline.upload_pipeline()
 
-    except ValueError as err: 
-        raise BadRequest('Invalid data: {}'.format(err))

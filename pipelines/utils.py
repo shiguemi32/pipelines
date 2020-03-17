@@ -32,28 +32,15 @@ def validate_parameters(parameters):
     except SchemaError:
         return False
 
-train_pipeline_schema = Schema({
-    'experiment_id': str,
-    'csv': str,
-    'txt': str,
-    'components': list
+component_schema = Schema({
+    'component_name': str,
+    'notebook_path': str,
+    Optional('parameters'): list    
 })
 
-def validate_train_pipeline(pipeline):
+def validate_component(component):
     try:
-        train_pipeline_schema.validate(pipeline)
-        return True
-    except SchemaError:
-        return False
-
-deploy_pipeline_schema = Schema({
-    'experiment_id': str,
-    'components': list
-})
-
-def validate_deploy_pipeline(pipeline):
-    try:
-        deploy_pipeline_schema.validate(pipeline)
+        component_schema.validate(component)
         return True
     except SchemaError:
         return False
