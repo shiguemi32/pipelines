@@ -7,11 +7,11 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Gitter](https://badges.gitter.im/platiagro/community.svg)](https://gitter.im/platiagro/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-PlatIAgro Pipelines management microservice.
+PlatIAgro Pipelines microservice.
 
 ## Requirements
 
-You can the application run locally or in a docker container, the requirements for each setup are listed below.
+You can run the application locally or in a docker container, the requirements for each setup are listed below.
 
 ### Local
 
@@ -42,3 +42,56 @@ Run it :
 $ pip install .
 $ python -m pipelines.api
 ```
+
+## Testing
+
+Firstly install the requirements:
+
+```bash
+$ pip install .[testing]
+```
+
+Then run all the tests:
+
+```bash
+$ pytest
+```
+
+## API
+
+API usage examples.
+
+### Train Pipeline
+
+method: POST
+url: /v1/pipelines
+
+```
+curl -X POST \
+  http://localhost:8080/pipelines \
+  --H 'content-type: application/json' \
+  --d '{
+	"experiment_id": "b1596851-3951-42ea-bd60-6b7e9ef25d72",
+	"csv": "dataset.csv",
+	"txt": "header.txt",
+	"components": [
+		{
+			"component_name": "Filter",
+		 	"notebook_path": "Filter.ipynb",
+		},
+		{
+			"component_name": "AutoML",
+		 	"notebook_path": "AutoML.ipynb"
+            "parameters": [
+                {
+                    "name": "price",
+                    "type": "Int",
+                    "value": "3"
+                }
+            ]
+        }
+	]
+}'
+```
+
+This endpoint creates a pipeline following the components list order.

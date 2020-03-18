@@ -18,9 +18,11 @@ with open(os.path.join(HERE, 'README.md'), 'rt', encoding='utf8') as f:
 def get_requirements(reqfile):
     path = os.path.join(HERE, reqfile)
     with open(path) as f:
-        requirements = f.read().splitlines()
-        return requirements
+        return f.read().splitlines()
 
+extras = {
+    "testing": get_requirements('requirements/requirements.test.txt')
+}
 
 setup(
     name=NAME,
@@ -32,6 +34,7 @@ setup(
 
     packages=find_packages(),
     install_requires=get_requirements('requirements/requirements.txt'),
+    extras_require=extras,
 
     author='Miguel Figueira Ferraz',
     author_email='mferraz@cpqd.com.br',

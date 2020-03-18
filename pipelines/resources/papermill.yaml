@@ -1,0 +1,25 @@
+name: Kubeflow - Papermill
+description: Parametrize and execute Jupyter notebooks
+inputs:
+  - {name: Notebook Path, type: String, default: "", description: "Action to execute on KFServing"}
+  - {name: Output Path, type: String, default: "", description: "Name to give to the deployed model"}
+  - {name: In Csv, type: String, default: "", description: ""}
+  - {name: Dataset, type: String, default: "", description: ""}
+  - {name: Target, type: String, default: "", description: ""}
+  - {name: Out Dataset, type: String, default: "", description: ""}
+implementation:
+  container:
+    image: platiagro/datascience-notebook:latest
+    command: [papermill,
+      {inputValue: Notebook Path},
+      {inputValue: Output Path},
+      -p,
+      dataset,
+      {inputValue: Dataset},
+      -p,
+      target,
+      {inputValue: Target},
+      -p,
+      out_dataset,
+      {inputValue: Out Dataset}
+    ]
