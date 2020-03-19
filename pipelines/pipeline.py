@@ -4,6 +4,7 @@ import json
 from kfp import compiler, dsl, Client
 from werkzeug.exceptions import BadRequest
 
+from .pipelineClient import init_pipeline_client
 from .utils import normalize_string, validate_component, validate_parameters
 from .resources.templates import SELDON_DEPLOYMENT
 from .component import Component
@@ -29,18 +30,10 @@ class Pipeline():
         self._dataset = dataset
         self._target = target
 
-        self._client = self._init_client()
+        self._client = init_pipeline_client()
         
         self._experiment_id = experiment_id
         self._experiment = self._client.create_experiment(name=experiment_id)
-
-    def _init_client(self):
-        """Create a new kfp client. 
-        
-        Returns:
-            An instance of kfp client.
-        """
-        return Client('0.0.0.0:31380/pipeline')
 
     def _init_components(self, raw_components):
         """Instantiate the given components.
