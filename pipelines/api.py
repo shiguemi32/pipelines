@@ -8,7 +8,7 @@ from flask_cors import CORS
 from werkzeug.exceptions import BadRequest, InternalServerError
 
 from .train import train_pipeline, train_pipeline_status
-from .deploy import deploy_pipeline
+from .deploy import deploy_pipeline, get_deploys
 
 app = Flask(__name__)
 
@@ -28,6 +28,11 @@ def handle_train_pipeline():
     req_data = request.get_json()
     run_id = train_pipeline(req_data)
     return jsonify({"message": "Pipeline running.", "runId": run_id})
+
+@app.route("/deploys", methods=["GET"])
+def handle_get_deploys():
+    """Handles GET requests to /deploys."""
+    return jsonify(get_deploys())
 
 @app.route('/deploy', methods=['POST'])
 def handle_deploy_pipeline():
