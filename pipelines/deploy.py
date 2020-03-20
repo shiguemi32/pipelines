@@ -41,11 +41,14 @@ def get_deploys():
     runs = []
     token = ''
     while True:
-        list_runs = client.list_runs(page_token=token, sort_by='created_at desc',page_size=20)
+        list_runs = client.list_runs(page_token=token, sort_by='created_at desc', page_size=100)
         if list_runs.runs is not None:
             for run in list_runs.runs:
-                _run = format_pipeline_run(run)
-                runs.append(_run)
+                # check if run is type deployment
+                manifest = run.pipeline_spec.workflow_manifest
+                if 'SeldonDeployment' in manifest:
+                    _run = format_pipeline_run(run)
+                    runs.append(_run)
             token = list_runs.next_page_token
             runs_size = len(list_runs.runs)
             if runs_size == 0 or token is None:
