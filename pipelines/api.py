@@ -7,8 +7,8 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from werkzeug.exceptions import BadRequest, InternalServerError
 
-from .train import train_pipeline
-from .deploy import deploy_pipeline
+from .train import train_pipeline, train_pipeline_status
+from .deploy import deploy_pipeline, get_deploys
 
 app = Flask(__name__)
 
@@ -17,12 +17,22 @@ def index():
     """Handles GET requests to /."""
     return jsonify(message='PlatIAgro Pipelines v0.0.1')
 
+@app.route("/train/<run_id>", methods=["GET"])
+def handle_train_pipeline_status(run_id):
+    """Handles GET requests to /train/<run_id>."""
+    return jsonify(train_pipeline_status(run_id))
+
 @app.route('/train', methods=['POST'])
 def handle_train_pipeline():
     """Handles POST requests to /train."""
     req_data = request.get_json()
     run_id = train_pipeline(req_data)
     return jsonify({"message": "Pipeline running.", "runId": run_id})
+
+@app.route("/deploys", methods=["GET"])
+def handle_get_deploys():
+    """Handles GET requests to /deploys."""
+    return jsonify(get_deploys())
 
 @app.route('/deploy', methods=['POST'])
 def handle_deploy_pipeline():
