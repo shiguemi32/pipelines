@@ -208,7 +208,7 @@ components:
           type: string
         error:
           type: string
-        finished_at:
+        finishedAt:
           type: string
           format: date-time
         id:
@@ -223,13 +223,13 @@ components:
                 type: string
               name:
                 type: string
-              node_id:
+              nodeId:
                 type: string
-              number_value:
+              numberValue:
                 type: number
         name:
           type: string
-        pipeline_spec:
+        pipelineSpec:
           type: object
           properties:
             parameters:
@@ -237,13 +237,13 @@ components:
               items:
                 oneOf:
                   - $ref: "#/components/schemas/Parameter"
-            pipeline_id:
+            pipelineId:
                 type: string
-            pipeline_manifest:
+            pipelineManifest:
                 type: string
-            pipeline_name:
+            pipelineName:
                 type: string
-            workflow_manifest:
+            workflowManifest:
                 type: object
                 properties:
                   apiVersion:
@@ -270,7 +270,7 @@ components:
                       startedAt:
                         type: string
                         format: date-time
-        resource_references:
+        resourceReferences:
           type: array
           items:
             type: object
@@ -286,21 +286,21 @@ components:
                 type: string
               relationship:
                 type: string
-        scheduled_at:
+        scheduledAt:
           type: string
         status:
           type: string
-        storage_state:
+        storageState:
           type: string
     RunDetail:
       type: object
       properties:
-        pipeline_runtime:
+        pipelineRuntime:
           type: object
           properties:
-            pipeline_manifest:
+            pipelineManifest:
               type: string
-            workflow_manifest:
+            workflowManifest:
               type: object
               properties:
                 apiVersion:
