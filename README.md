@@ -95,3 +95,7 @@ curl -X POST \
 ```
 
 This endpoint creates a pipeline following the components list order.
+
+## API
+
+See the [PlatIAgro Pipelines API doc](https://platiagro.github.io/pipelines/) for API specification.
