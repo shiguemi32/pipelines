@@ -1,6 +1,0 @@
-README.md
-LICENSE
-.coverage
-.env.example
-*/__pycache__
-*.pyc
