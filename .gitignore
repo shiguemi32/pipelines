@@ -125,4 +125,7 @@ dmypy.json
 .pyre/
 
 .vscode/
-pipelines_scripts/
+
+*.tar.gz
+
+.devcontainer

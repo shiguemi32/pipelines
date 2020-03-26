@@ -1,30 +1,21 @@
-# PlatIAgro Pipeline Generator
-
-## Table of Contents
-
-- [Introduction](#introduction)
-- [Requirements](#requirements)
-- [Quick Start](#quick-start)
-- [API](#api)
+# PlatIAgro Pipelines
 
 ## Introduction
 
-[![Build Status](https://travis-ci.com/platiagro/pipeline-generator.svg?branch=master)](https://travis-ci.com/platiagro/pipeline-generator)
-[![codecov](https://codecov.io/gh/platiagro/pipeline-generator/branch/master/graph/badge.svg)](https://codecov.io/gh/platiagro/pipeline-generator)
+[![Build Status](https://travis-ci.com/platiagro/pipelines.svg?branch=master)](https://travis-ci.com/platiagro/pipelines)
+[![codecov](https://codecov.io/gh/platiagro/pipelines/branch/master/graph/badge.svg)](https://codecov.io/gh/platiagro/pipelines)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Gitter](https://badges.gitter.im/platiagro/community.svg)](https://gitter.im/platiagro/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-[![Known Vulnerabilities](https://snyk.io//test/github/platiagro/pipeline-generator/badge.svg?targetFile=requirements.txt)](https://snyk.io//test/github/platiagro/pipeline-generator?targetFile=requirements.txt)
 
-PlatIAgro Kubeflow Pipeline generator.
+PlatIAgro Pipelines microservice.
 
 ## Requirements
 
-The application can be run locally or in a docker container, the requirements for each setup are listed below.
+You can run the application locally or in a docker container, the requirements for each setup are listed below.
 
 ### Local
 
-- [Python 3](https://www.python.org/downloads/)
-- [Pip](https://pip.pypa.io/en/stable/installing/)
+- [Python 3.6](https://www.python.org/downloads/)
 
 ### Docker
 
@@ -32,97 +23,79 @@ The application can be run locally or in a docker container, the requirements fo
 
 ## Quick Start
 
-Make sure you have all requirements installed on your computer, then you can run the server in a [docker container](#run-docker) or in your [local machine](#run-local).<br>
+Make sure you have all requirements installed on your computer, then you may run the server in a [docker container](#run-docker) or in your [local machine](#run-local).<br>
 
 ### Run Docker
 
-Run it inside root directory:
+Run it :
 
 ```bash
-$ docker build -t pipeline-generator .
-$ docker run -p 5000:5000 -t pipeline-generator pipeline-generator
+$ docker build -t platiagro/pipelines:0.0.1 .
+$ docker run -it -p 8080:8080 platiagro/pipelines:0.0.1
 ```
 
 ### Run Local:
 
-Run it inside root directory:
+Run it :
 
 ```bash
-$ pip install -r requirements.txt
-$ python application.py
+$ pip install .
+$ python -m pipelines.api
+```
+
+## Testing
+
+Firstly install the requirements:
+
+```bash
+$ pip install .[testing]
+```
+
+Then run all the tests:
+
+```bash
+$ pytest
 ```
 
 ## API
 
-API Reference with examples.
+API usage examples.
 
-### Pipelines
+### Train Pipeline
 
-**Generate Pipeline and upload on Kubeflow:**<br>
-url: /pipelines
+method: POST
+url: /v1/pipelines
 
 ```
-curl -X POST "http://localhost:5000/pipelines \
-  -d '{
+curl -X POST \
+  http://localhost:8080/pipelines \
+  --H 'content-type: application/json' \
+  --d '{
+	"experiment_id": "b1596851-3951-42ea-bd60-6b7e9ef25d72",
+	"csv": "dataset.csv",
+	"txt": "header.txt",
 	"components": [
 		{
-			"component_name": "filter",
-			"notebook_path": "s3://mlpipeline/components/6c1f7876-8c51-4b4b-a3f0-e9b8ea5e4ac7/Filter.ipynb",
-			"parameters": [
-				{
-					"name": "in_csv",
-					"type": "str",
-					"default": ""
-				},
-				{
-					"name": "in_txt",
-					"type": "str",
-					"default": ""
-				},
-				{
-					"name": "out_csv",
-					"value": "filter.csv"
-				},
-				{
-					"name": "out_txt",
-					"value": "filter.txt"
-				},
-				{
-					"name": "target_var",
-					"type": "str",
-					"default": ""
-				},
-				{
-					"name": "automl",
-					"value": true
-				},
-				{
-					"name": "featuretools",
-					"value": false
-				}
-			]
+			"component_name": "Filter",
+		 	"notebook_path": "Filter.ipynb",
 		},
 		{
-			"component_name": "auto-ml",
-			"notebook_path": "s3://mlpipeline/components/2818414a-67e5-412d-9868-6ffd23f9b581/AutoML.ipynb",
-			"dependencies": ["filter"],
-			"image": "platiagro/autosklearn-notebook:latest",
-			"parameters": [
-				{
-					"name": "in_csv",
-					"value": "filter.csv"
-				},
-				{
-					"name": "in_txt",
-					"value": "filter.txt"
-				},
-				{
-					"name": "tr_duration",
-					"type": "int",
-					"default": 300
-				}
-			]
-		}
+			"component_name": "AutoML",
+		 	"notebook_path": "AutoML.ipynb"
+            "parameters": [
+                {
+                    "name": "price",
+                    "type": "Int",
+                    "value": "3"
+                }
+            ]
+        }
 	]
 }'
 ```
+
+This endpoint creates a pipeline following the components list order.
+
+## API
+
+See the [PlatIAgro Pipelines API doc](https://platiagro.github.io/pipelines/) for API specification.
