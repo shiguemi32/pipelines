@@ -1,13 +1,19 @@
-FROM python:3.6.9-slim-stretch
+FROM python:3.6-buster
 
-WORKDIR /home/python/app
+RUN apt-get install libstdc++ g++
 
-COPY requirements.txt ./requirements.txt
+COPY ./requirements /app/requirements
 
-RUN pip install -r requirements.txt
+RUN pip install -r /app/requirements/requirements.txt
 
-COPY . .
+COPY ./pipelines /app/pipelines
+COPY ./setup.py /app/setup.py
 
-EXPOSE 3000
+RUN pip install /app/
 
-CMD python application.py
+WORKDIR /app/
+
+EXPOSE 8080
+
+ENTRYPOINT ["python", "-m", "pipelines.api"]
+CMD []
