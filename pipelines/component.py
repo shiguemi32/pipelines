@@ -4,6 +4,7 @@ import yaml
 
 from kfp import components, dsl
 
+from .utils import validate_notebook_path
 from .minio import load_notebook
 from .resources.templates import PAPERMILL_YAML, COMPONENT_SPEC, GRAPH
 
@@ -25,7 +26,7 @@ class Component():
         """
         self._experiment_id = experiment_id
         self._operator_id = operator_id
-        self._notebook_path = notebook_path
+        self._notebook_path = validate_notebook_path(notebook_path)
 
         self._parameters = parameters
         self.container_op = None

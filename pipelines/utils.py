@@ -1,22 +1,11 @@
 # -*- coding: utf-8 -*-
 import json
+import re
 
-from re import sub
 from unicodedata import normalize
+
 from schema import Schema, SchemaError, Use, Or, Optional
-
-def normalize_string(string):
-    # Normalize string
-    normalized = (normalize("NFD", string)
-                  .encode("ascii", "ignore")
-                  .decode("utf-8")
-                  .lower())
-
-    # Remove invalid chars
-    normalized = sub(r'([^\w\s]|_)+(?=\s|$)', '', normalized)
-    normalized = sub('[^A-Za-z0-9]+', '_', normalized)
-
-    return normalized
+from werkzeug.exceptions import BadRequest
 
 parameter_schema = Schema({
     'name': str,
@@ -45,6 +34,14 @@ def validate_component(component):
         return True
     except SchemaError:
         return False
+
+def validate_notebook_path(notebook_path):
+    if re.search('\Aminio://', notebook_path):
+        return re.sub('minio://', 's3://', notebook_path, 1)
+    elif re.search('\As3:/', notebook_path):
+        return notebook_path
+    else:
+        raise BadRequest('Invalid notebook path. ' + notebook_path)
 
 def format_pipeline_run(run):
     # format run response

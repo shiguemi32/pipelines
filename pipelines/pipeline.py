@@ -5,7 +5,7 @@ from kfp import compiler, dsl
 from werkzeug.exceptions import BadRequest
 
 from .pipelineClient import init_pipeline_client
-from .utils import normalize_string, validate_component, validate_parameters
+from .utils import validate_component, validate_parameters
 from .resources.templates import SELDON_DEPLOYMENT
 from .component import Component
 
