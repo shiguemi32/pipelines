@@ -1,6 +1,6 @@
-FROM python:3.8-alpine3.11
+FROM python:3.6-buster
 
-RUN apk add --no-cache libstdc++ g++ libressl-dev musl-dev libffi-dev
+RUN apt-get install libstdc++ g++
 
 COPY ./requirements /app/requirements
 
@@ -11,10 +11,9 @@ COPY ./setup.py /app/setup.py
 
 RUN pip install /app/
 
-RUN apk del libressl-dev musl-dev libffi-dev
-
 WORKDIR /app/
 
 EXPOSE 8080
 
-CMD ["python", "-m", "pipelines.api"]
+ENTRYPOINT ["python", "-m", "pipelines.api"]
+CMD []

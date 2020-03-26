@@ -5,7 +5,7 @@ import yaml
 from kfp import components, dsl
 
 from .minio import load_notebook
-from .resources.templates import COMPONENT_SPEC, GRAPH
+from .resources.templates import PAPERMILL_YAML, COMPONENT_SPEC, GRAPH
 
 class Component():
     """Represents a Pipeline Component.
@@ -14,16 +14,17 @@ class Component():
         container_op (kfp.dsl.ContainerOp): component operator.
     """
 
-    def __init__(self, component_name, notebook_path, parameters, prev):
+    def __init__(self, experiment_id, operator_id, notebook_path, parameters, prev):
         """Create a new instance of Component.
 
         Args:
-            component_name (str): component name.
+            operator_id (str): PlatIA operator UUID.
             notebook_path (str): path to component notebook in MinIO.
             parameters (list): list of component parameters.
             prev (Component): previous component in pipeline.
         """
-        self._component_name = component_name
+        self._experiment_id = experiment_id
+        self._operator_id = operator_id
         self._notebook_path = notebook_path
 
         self._parameters = parameters
@@ -55,7 +56,7 @@ class Component():
 
         component_spec = COMPONENT_SPEC.substitute({
             "image": self._image,
-            "name": self._component_name
+            "name": self._operator_id
         })
         
         return component_spec
@@ -68,41 +69,38 @@ class Component():
             Pipeline components graph in JSON format.    
         """
         component_graph = GRAPH.substitute({
-            "name": self._component_name,
+            "name": self._operator_id,
             "type": "TRANSFORMER" if self.next else "MODEL",
             "children": self.next.create_component_graph() if self.next else ""
         })
 
         return component_graph
 
-    def _create_component_yaml(self):
-        """Modify current YAML file to include component parameters.
-
-        Returns:
-            Path to the component yaml.
-        """
-        path = lambda file: os.path.join(os.path.dirname(__file__), 'resources', file)
-
-        template_path = path('papermill.yaml')
-
-        if (self._parameters):
-            with open(template_path, 'r') as f:
-                template = yaml.full_load(f.read())
+    def _create_parameters_papermill(self):
+        if self._parameters:
+            parameters_string = []
 
             for parameter in self._parameters:
-                template['inputs'].append({"name": parameter['name'], "type": parameter['type'], "default": ""})
+                parameters_string.append('-p ' + parameter['name'] + ' ' \
+                     + parameter['value'] + ',')
+            
+            return ' '.join(parameters_string)
+        return ''
 
-                template['implementation']['container']['command'].extend(['-p', parameter['name'], str(parameter['value'])])
 
-            template['name'] = self._component_name
+    def _create_component_yaml(self):
+        yaml_template = yaml.load(PAPERMILL_YAML.substitute({
+            "operatorName": "PlatIA-" + self._operator_id,
+            "parameters": self._create_parameters_papermill()
+        }), Loader=yaml.FullLoader)
 
-            file_path = path('{}.yaml'.format(self._component_name))
+        file_name = '{}.yaml'.format(self._operator_id)
+        file_path = os.path.join(os.path.dirname(__file__), 'resources', file_name)
 
-            with open(file_path, 'w') as f:
-                f.write(yaml.dump(template))
+        with open(file_path, 'w') as f:
+            yaml.dump(yaml_template, f)
 
-            return file_path
-        return template_path
+        return file_path
 
     def create_container_op(self):
         """Create component operator from YAML file."""
@@ -116,6 +114,7 @@ class Component():
         self.container_op = container(
             notebook_path=notebook_path,
             output_path=output_path,
+            experiment_id=self._experiment_id,
             dataset=self.dataset,
             target=self.target,
             out_dataset=self.out_dataset).set_image_pull_policy('Always')
@@ -128,4 +127,13 @@ class Component():
         self.target = target
 
     def set_output_file(self):
-        self.out_dataset = self._component_name + '.csv'
+        self.out_dataset = self._operator_id + '.csv'
+
+    def get_parameters_json(self):
+        parameters_str =  []
+
+        for parameter in parameters:
+            parameters_str.append(str(parameter))
+
+        return '[' + parameters_str.join(',') + ']'
+        

@@ -19,7 +19,7 @@ def train_pipeline(pipeline_parameters):
         Pipeline run id.
     """
     try:
-        experiment_id = pipeline_parameters['experiment_id']
+        experiment_id = pipeline_parameters['experimentId']
         components = pipeline_parameters['components']
         dataset = pipeline_parameters['dataset']
         target = pipeline_parameters['target']
@@ -35,11 +35,11 @@ def train_pipeline(pipeline_parameters):
     return pipeline.run_pipeline()
 
 
-def train_pipeline_status(run_id):
+def train_pipeline_status(experiment_id):
     """Get run details.
 
     Args:
-        run_id (str): experiment run id.
+        experiment_id (str): PlatIA experiment_id.
 
     Returns:
        Run details.
@@ -47,8 +47,13 @@ def train_pipeline_status(run_id):
     run_details = ''
     try:
         client = init_pipeline_client()
+        experiment = client.get_experiment(experiment_name=experiment_id)
+        experiment_runs = client.list_runs(page_size='1', sort_by='created_at desc', experiment_id=experiment.id)
+
+        run = experiment_runs.runs[0]
+        run_id = run.id
         run_details = client.get_run(run_id)
     except Exception:
-        raise BadRequest('Not found run with id: {}'.format(run_id))
+        raise BadRequest('Not found run with id: {}'.format())
 
     return format_pipeline_run_details(run_details)
