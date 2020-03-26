@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from os import getenv
+
 from kfp import compiler, dsl, Client
 
 def init_pipeline_client():
@@ -7,4 +9,4 @@ def init_pipeline_client():
     Returns:
         An instance of kfp client.
     """
-    return Client('0.0.0.0:31380/pipeline')
+    return Client(getenv("KF_PIPELINES_ENDPOINT", '0.0.0.0:31380/pipeline'))

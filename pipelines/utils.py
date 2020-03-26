@@ -34,8 +34,8 @@ def validate_parameters(parameters):
         return False
 
 component_schema = Schema({
-    'component_name': str,
-    'notebook_path': str,
+    'operatorId': str,
+    'notebookPath': str,
     Optional('parameters'): list    
 })
 
@@ -109,18 +109,18 @@ def format_pipeline_run(run):
     return resp_run
 
 def format_pipeline_run_details(run_details):
-    # format pipeline_runtime response
-    pipeline_runtime = run_details.pipeline_runtime
-    resp_pipeline_runtime = {}
-    resp_pipeline_runtime['pipelineManifest'] = pipeline_runtime.pipeline_manifest
-    resp_pipeline_runtime['workflowManifest'] = json.loads(pipeline_runtime.workflow_manifest)
+    run = run_details.run
 
-    # format run response
-    run = run_details.run 
-    resp_run = format_pipeline_run(run)
+    workflow_manifest = json.loads(run_details.pipeline_runtime.workflow_manifest)
+    nodes = workflow_manifest['status']['nodes']
 
-    # format run detail response
-    resp_run_detail = {}
-    resp_run_detail['pipelineRuntime'] = resp_pipeline_runtime
-    resp_run_detail['run'] = resp_run
-    return resp_run_detail
+    pipeline_status = ''
+    components_status = {}
+
+    for index, component in enumerate(nodes.values()):
+        if index == 0:
+            pipeline_status = component['phase']
+        else:
+            components_status[str(component['displayName'])[7:]] = str(component['phase'])
+
+    return {"status": components_status}

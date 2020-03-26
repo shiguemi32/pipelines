@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 
-from kfp import compiler, dsl, Client
+from kfp import compiler, dsl
 from werkzeug.exceptions import BadRequest
 
 from .pipelineClient import init_pipeline_client
@@ -25,14 +25,13 @@ class Pipeline():
             target (str): target column from dataset.
         """
         # Instantiate pipeline's components
-        self._first = self._init_components(components)
-
+        self._experiment_id = experiment_id
         self._dataset = dataset
         self._target = target
 
+        self._first = self._init_components(components)
+
         self._client = init_pipeline_client()
-        
-        self._experiment_id = experiment_id
         self._experiment = self._client.create_experiment(name=experiment_id)
 
     def _init_components(self, raw_components):
@@ -42,9 +41,9 @@ class Pipeline():
             raw_components (list): list of component objects.
 
         Component objects format:
-            name (str): component name.
-            type (str): component type (str, int, float).
-            value (component type): current component value.
+            operator_id (str): PlatIA operator UUID.
+            notebook_path (str): component notebook MinIO path.
+            parameters (list): component parameters list. (optional)
 
         Returns:
             The first component from this pipeline.
@@ -56,8 +55,8 @@ class Pipeline():
             if not validate_component(component):
                 raise BadRequest('Invalid request.')
 
-            component_name = normalize_string(component.get('component_name'))
-            notebook_path = component.get('notebook_path')
+            operator_id = component.get('operatorId')
+            notebook_path = component.get('notebookPath')
 
             parameters = component.get('parameters', None)
             # validate parameters
@@ -67,10 +66,10 @@ class Pipeline():
 
             if index == 0:
                 # store the first component from pipeline
-                first = Component(component_name, notebook_path, parameters, None)
+                first = Component(self._experiment_id, operator_id, notebook_path, parameters, None)
                 previous = first
             else:
-                current_component = Component(component_name, notebook_path, parameters, previous)
+                current_component = Component(self._experiment_id, operator_id, notebook_path, parameters, previous)
                 previous.set_next_component(current_component)
                 previous = current_component
 

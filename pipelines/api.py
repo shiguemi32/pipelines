@@ -17,10 +17,10 @@ def index():
     """Handles GET requests to /."""
     return jsonify(message='PlatIAgro Pipelines v0.0.1')
 
-@app.route("/train/<run_id>", methods=["GET"])
-def handle_train_pipeline_status(run_id):
-    """Handles GET requests to /train/<run_id>."""
-    return jsonify(train_pipeline_status(run_id))
+@app.route("/train/<experiment_id>", methods=["GET"])
+def handle_train_pipeline_status(experiment_id):
+    """Handles GET requests to /train/<experiment_id>."""
+    return jsonify(train_pipeline_status(experiment_id))
 
 @app.route('/train', methods=['POST'])
 def handle_train_pipeline():
@@ -61,6 +61,10 @@ def parse_args(args):
         "--port", type=int, default=8080, help="Port for HTTP server (default: 8080)"
     )
     parser.add_argument("--enable-cors", action="count")
+    parser.add_argument(
+        "--debug", action="count", help="Enable debug"
+    )
+
     return parser.parse_args(args)
 
 if __name__ == "__main__":
@@ -70,4 +74,4 @@ if __name__ == "__main__":
     if args.enable_cors:
         CORS(app)
 
-    app.run(host="0.0.0.0", port=args.port)
+    app.run(host="0.0.0.0", port=args.port, debug=args.debug)
