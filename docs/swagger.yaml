@@ -1,0 +1,465 @@
+openapi: 3.0.0
+info:
+  title: PlatIAgro Pipelines API
+  version: "0.0.2"
+  description: >
+    These are the docs for PlatIAgro Pipelines API.
+    The endpoints below are usually accessed by the PlatIAgro Web-UI.
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: "Deploy"
+    description: >
+      Deploy is an inference notebook.
+  - name: "Train"
+    description: >
+      Train is a training notebook.
+paths:
+  /deploys:
+    get:
+      summary: "List all deploys."
+      tags:
+        - "Deploy"
+      responses:
+        "200":
+          $ref: "#/components/responses/Runs"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /deploy:
+    post:
+      summary: "Run a deployment pipeline"
+      tags:
+        - "Deploy"
+      requestBody:
+        $ref: "#/components/requestBodies/DeployPost"
+      responses:
+        "200":
+          $ref: "#/components/responses/Runs"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /train/<run_id>:
+    get:
+      summary: "Get the run status."
+      tags:
+        - "Train"
+      parameters:
+        - name: run_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/RunDetail"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /train:
+    post:
+      summary: "Run a train pipeline"
+      tags:
+        - "Train"
+      requestBody:
+        $ref: "#/components/requestBodies/TrainPost"
+      responses:
+        "200":
+          $ref: "#/components/responses/Runs"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+components:
+  schemas:
+    Artifact:
+      type: object
+      properties:
+        name:
+          type: string
+        optional:
+          type: boolean
+        path:
+          type: object
+    Parameter:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+        valueFrom:
+          type: object
+    Template:
+      type: object
+      properties:
+        dag:
+          type: object
+          properties:
+            tasks:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    arguments:
+                      type: object
+                      properties:
+                        parameters:
+                          type: array
+                          items:
+                            oneOf:
+                              - $ref: "#/components/schemas/Parameter"
+                    dependencies:
+                      type: array
+                      items:
+                        type: string
+                    name:
+                      type: string
+                    template:
+                      type: string
+        container:
+          type: object
+          properties:
+            command:
+              type: array
+              items:
+                type: string
+            image:
+              type: string
+            imagePullPolicy:
+              type: string
+            name:
+              type: string
+            resources:
+              type: object
+        inputs:
+          type: object
+          properties:
+            parameters:
+                type: array
+                items:
+                  oneOf:
+                    - $ref: "#/components/schemas/Parameter"
+        metadata:
+          type: string
+        name:
+          type: string
+        outputs:
+          type: object
+          properties:
+            artifacts:
+              type: array
+              items:
+                oneOf:
+                  - $ref: "#/components/schemas/Artifact"
+            parameters:
+                type: array
+                items:
+                  oneOf:
+                    - $ref: "#/components/schemas/Parameter"
+        resource:
+          type: object
+          properties:
+            action:
+              type: string
+            manifest:
+              type: string
+            successCondition:
+              type: string
+    Spec:
+      type: object
+      properties:
+        arguments:
+          type: object
+          properties:
+            parameters:
+              type: array
+              items:
+                oneOf:
+                  - $ref: "#/components/schemas/Parameter"
+        entrypoint:
+          type: string
+        serviceAccountName:
+          type: string
+        templates:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/Template"
+    Run:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        description:
+          type: string
+        error:
+          type: string
+        finishedAt:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        metrics:
+          type: array
+          items:
+            type: object
+            properties:
+              format:
+                type: string
+              name:
+                type: string
+              nodeId:
+                type: string
+              numberValue:
+                type: number
+        name:
+          type: string
+        pipelineSpec:
+          type: object
+          properties:
+            parameters:
+              type: array
+              items:
+                oneOf:
+                  - $ref: "#/components/schemas/Parameter"
+            pipelineId:
+                type: string
+            pipelineManifest:
+                type: string
+            pipelineName:
+                type: string
+            workflowManifest:
+                type: object
+                properties:
+                  apiVersion:
+                    type: string
+                  kind:
+                    type: string
+                  metadata:
+                    type: object
+                    properties:
+                      creationTimestamp:
+                        type: string
+                        format: date-time
+                      generateName:
+                        type: string
+                  spec:
+                    allOf:
+                     - $ref: "#/components/schemas/Spec"
+                  status:
+                    type: object
+                    properties:
+                      finishedAt:
+                        type: string
+                        format: date-time
+                      startedAt:
+                        type: string
+                        format: date-time
+        resourceReferences:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  type:
+                    type: string
+              name:
+                type: string
+              relationship:
+                type: string
+        scheduledAt:
+          type: string
+        status:
+          type: string
+        storageState:
+          type: string
+    RunDetail:
+      type: object
+      properties:
+        pipelineRuntime:
+          type: object
+          properties:
+            pipelineManifest:
+              type: string
+            workflowManifest:
+              type: object
+              properties:
+                apiVersion:
+                  type: string
+                kind:
+                  type: string
+                metadata:
+                  type: object
+                  properties:
+                    creationTimestamp:
+                      type: string
+                      format: date-time
+                    generateName:
+                      type: string
+                    generation:
+                      type: number
+                    labels:
+                      type: object
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                    resourceVersion:
+                      type: string
+                    selfLink:
+                      type: string
+                    uid:
+                      type: string
+            spec:
+              allOf:
+                - $ref: "#/components/schemas/Spec"
+            status:
+              type: object
+              properties:
+                finishedAt:
+                  type: string
+                  format: date-time
+                nodes:
+                  type: object
+                phase:
+                  type: string
+                startedAt:
+                  type: string
+                  format: date-time
+        run:
+          allOf:
+            - $ref: "#/components/schemas/Run"
+    Runs:
+      type: array
+      items:
+        oneOf:
+          - $ref: "#/components/schemas/Run"
+  requestBodies:
+    DeployPost:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              experiment_id:
+                type: string
+              components:
+                type: array
+                items:
+                  type: string
+              dataset:
+                type: string
+              target:
+                type: string
+    TrainPost:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              experiment_id:
+                type: string
+              components:
+                type: array
+                items:
+                  type: string
+              dataset:
+                type: string
+              target:
+                type: string
+  responses:
+    Run:
+      description: ""
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Run"
+    RunDetail:
+      description: ""
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RunDetail"
+    Runs:
+      description: ""
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Runs"
+    Message:
+      description: ""
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+              - message
+    BadRequest:
+      description: ""
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+              - message
+    NotFound:
+      description: ""
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "The specified ... does not exist"
+            required:
+              - message
+    InternalServerError:
+      description: ""
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "An internal failure occurred."
+            required:
+              - message
+    ServiceUnavailable:
+      description: ""
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "The service is unavailable. Try your call again."
+            required:
+              - message

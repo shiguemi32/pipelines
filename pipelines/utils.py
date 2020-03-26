@@ -51,22 +51,22 @@ def format_pipeline_run(run):
     resp_run = {}
     resp_run['id'] = run.id
     resp_run['name'] = run.name
-    resp_run['created_at'] = run.created_at
-    resp_run['finished_at'] = run.finished_at
+    resp_run['createdAt'] = run.created_at
+    resp_run['finishedAt'] = run.finished_at
     resp_run['description'] = run.description
     resp_run['error'] = run.error
     resp_run['status'] = run.status
-    resp_run['scheduled_at'] = run.scheduled_at
-    resp_run['storage_state'] = run.storage_state
+    resp_run['scheduledAt'] = run.scheduled_at
+    resp_run['storageState'] = run.storage_state
 
     # format run pipeline spec response
     pipeline_spec = run.pipeline_spec
     resp_pipeline_spec = {}
     if pipeline_spec is not None:
-        resp_pipeline_spec['pipeline_id'] = pipeline_spec.pipeline_id
-        resp_pipeline_spec['pipeline_manifest'] = pipeline_spec.pipeline_manifest
-        resp_pipeline_spec['pipeline_name'] = pipeline_spec.pipeline_name
-        resp_pipeline_spec['workflow_manifest'] = json.loads(pipeline_spec.workflow_manifest)
+        resp_pipeline_spec['pipelineId'] = pipeline_spec.pipeline_id
+        resp_pipeline_spec['pipelineManifest'] = pipeline_spec.pipeline_manifest
+        resp_pipeline_spec['pipelineName'] = pipeline_spec.pipeline_name
+        resp_pipeline_spec['workflowManifest'] = json.loads(pipeline_spec.workflow_manifest)
         parameters = []
         if pipeline_spec.parameters is not None:
             for parameter in pipeline_spec.parameters:
@@ -76,7 +76,7 @@ def format_pipeline_run(run):
                 }
                 parameters.append(_parameter)
         resp_pipeline_spec['parameters'] = parameters
-    resp_run['pipeline_spec'] = resp_pipeline_spec
+    resp_run['pipelineSpec'] = resp_pipeline_spec
 
     # format run metrics response
     metrics = []
@@ -85,8 +85,8 @@ def format_pipeline_run(run):
             _metric = {
                 'format':  metric.format,
                 'name': metric.name,
-                'node_id':metric.node_id,
-                'number_value': metric.number_value
+                'nodeId':metric.node_id,
+                'numberValue': metric.number_value
             }
             metrics.append(_metric)
     resp_run['metrics'] = metrics
@@ -104,7 +104,7 @@ def format_pipeline_run(run):
                 }
             }
             resource_references.append(_reference)
-    resp_run['resource_references'] = resource_references
+    resp_run['resourceReferences'] = resource_references
     
     return resp_run
 
