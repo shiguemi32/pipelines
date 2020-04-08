@@ -67,7 +67,7 @@ COMPONENT_SPEC = Template("""
                 "image": "$image",
                 "name": "$name",
                 "env": [
-                    
+                    {"PARAMETERS": "$parameters"}
                 ]
             }
         ]
