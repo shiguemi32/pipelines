@@ -32,6 +32,7 @@ class Component():
         self._parameters = parameters
         self.container_op = None
 
+        # TODO: Change image repo
         self._image = 'miguelfferraz/platia-{}:latest'.format(
             self._operator_id)
 
@@ -51,10 +52,20 @@ class Component():
             return ' '.join(parameters_string)
         return ''
 
+    def _create_parameters_seldon(self, dataset, target):
+        seldon_parameters = [
+            {'type': 'STRING', 'name': 'dataset', 'value': dataset},
+            {'type': 'STRING', 'name': 'target', 'value': target},
+            {'type': 'STRING', 'name': 'experiment_id', 'value': self._experiment_id}]
+
+        if self._parameters:
+            return seldon_parameters.extend(self._parameters)
+        return seldon_parameters
+
     def _create_component_yaml(self):
         yaml_template = yaml.load(PAPERMILL_YAML.substitute({
-            "operatorName": "PlatIA-" + self._operator_id,
-            "parameters": self._create_parameters_papermill()
+            'operatorName': 'PlatIA-' + self._operator_id,
+            'parameters': self._create_parameters_papermill()
         }), Loader=yaml.FullLoader)
 
         file_name = '{}.yaml'.format(self._operator_id)
@@ -66,16 +77,16 @@ class Component():
 
         return file_path
 
-    def create_component_spec(self):
+    def create_component_spec(self, dataset, target):
         """Create a string from component spec.
 
         Returns:
             Component spec in JSON format."""
 
         component_spec = COMPONENT_SPEC.substitute({
-            "image": self._image,
-            "name": self._operator_id,
-            "parameters": self._parameters if self._parameters else '[{}]'
+            'image': self._image,
+            'name': self._operator_id,
+            'parameters': self._create_parameters_seldon(dataset, target)
         })
 
         return component_spec
@@ -88,9 +99,9 @@ class Component():
             Pipeline components graph in JSON format.
         """
         component_graph = GRAPH.substitute({
-            "name": self._operator_id,
-            "type": "TRANSFORMER" if self.next else "MODEL",
-            "children": self.next.create_component_graph() if self.next else ""
+            'name': self._operator_id,
+            'type': 'TRANSFORMER' if self.next else 'MODEL',
+            'children': self.next.create_component_graph() if self.next else ""
         })
 
         return component_graph

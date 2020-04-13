@@ -87,7 +87,8 @@ class Pipeline():
         component = self._first
 
         while component:
-            specs.append(component.create_component_spec())
+            specs.append(component.create_component_spec(
+                self._dataset, self._target))
             component = component.next
 
         return ",".join(specs)
