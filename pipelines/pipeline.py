@@ -137,8 +137,6 @@ class Pipeline():
                 "graph": graph
             })
 
-            print(seldonserving)
-
             seldon_deployment = json.loads(seldonserving)
             serve_op = dsl.ResourceOp(
                 name="deploy",

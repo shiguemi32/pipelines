@@ -98,14 +98,12 @@ class Component():
     def create_container_op(self):
         """Create component operator from YAML file."""
         notebook_path = self._notebook_path
-        output_path = self._notebook_path + ".out"
 
         fpath = self._create_component_yaml()
         container = components.load_component_from_file(fpath)
 
         self.container_op = container(
             notebook_path=notebook_path,
-            output_path=output_path,
             experiment_id=self._experiment_id,
             dataset=self.dataset,
             target=self.target,
@@ -141,7 +139,7 @@ class Component():
             image='alpine/git:latest',
             command=['sh', '-c'],
             # TODO: Change git repo to upstream master
-            arguments=['git clone --depth 1 --branch feature/build-component-image https://github.com/miguelfferraz/pipelines; cp ./pipelines/pipelines/resources/image_builder/* /workspace;'],
+            arguments=['git clone --depth 1 --branch feature/deploy-inference-pipeline https://github.com/miguelfferraz/pipelines; cp ./pipelines/pipelines/resources/image_builder/* /workspace;'],
             pvolumes={'/workspace': export_notebook.pvolume}
         )
         build = dsl.ContainerOp(
