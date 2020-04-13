@@ -5,12 +5,10 @@ WORKDIR /app
 
 EXPOSE 5000
 
-ENV MODEL_NAME Predictor
-ENV API_TYPE REST
-ENV SERVICE_TYPE MODEL
-ENV PERSISTENCE 0
+ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["seldon-core-microservice", "$MODEL_NAME", "$API_TYPE", \
+    "--service-type", "$SERVICE_TYPE", \
+    "--persistence", "$PERSISTENCE", \
+    "--parameters", "$PARAMETERS", \
+    "--log-level", "$LOG_LEVEL"]
 
-CMD seldon-core-microservice $MODEL_NAME $API_TYPE \
-    --service-type $SERVICE_TYPE \
-    --persistence $PERSISTENCE \
-    --parameters $PARAMETERS
