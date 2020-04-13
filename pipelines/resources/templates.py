@@ -7,14 +7,13 @@ description: Parametrize and execute Jupyter notebooks
 inputs:
 - { name: Experiment Id, type: String, default: "", description: "" }
 - { name: Notebook Path, type: String, default: "", description: "" }
-- { name: Output Path, type: String, default: "", description: "" }
 - { name: Dataset, type: String, default: "", description: "" }
 - { name: Target, type: String, default: "", description: "" }
 - { name: Out Dataset, type: String, default: "", description: "" }
 implementation:
     container:
         image: platiagro/datascience-1386e2046833-notebook-cpu:0.0.2
-        command: [ papermill, { inputValue: Notebook Path }, { inputValue: Output Path }, -p, experiment_id, { inputValue: Experiment Id }, -p, dataset, { inputValue: Dataset }, -p, target, { inputValue: Target }, -p, out_dataset, { inputValue: Out Dataset }, $parameters]
+        command: [ papermill, { inputValue: Notebook Path }, -, -p, experiment_id, { inputValue: Experiment Id }, -p, dataset, { inputValue: Dataset }, -p, target, { inputValue: Target }, -p, out_dataset, { inputValue: Out Dataset }, $parameters]
 """)
 
 SELDON_DEPLOYMENT = Template("""{
@@ -67,7 +66,7 @@ COMPONENT_SPEC = Template("""
                 "image": "$image",
                 "name": "$name",
                 "env": [
-                    
+                    {"PARAMETERS": "$parameters"}
                 ]
             }
         ]

@@ -4,20 +4,20 @@ import json
 from kfp import compiler, dsl
 from werkzeug.exceptions import BadRequest
 
-from .pipelineClient import init_pipeline_client
-from .utils import validate_component, validate_parameters
+from .utils import init_pipeline_client, validate_component, validate_parameters
 from .resources.templates import SELDON_DEPLOYMENT
 from .component import Component
 
+
 class Pipeline():
     """Represents a KubeFlow Pipeline.
-    
+
     Train or deploy in KubeFlow the given pipeline.
     """
 
     def __init__(self, experiment_id, components, dataset, target):
         """Create a new instance of Pipeline.
-        
+
         Args:
             experiment_id (str): PlatIAgro experiment's uuid.
             components (list): list of pipeline components.
@@ -53,7 +53,7 @@ class Pipeline():
         for index, component in enumerate(raw_components):
             # check if component are in the correct format
             if not validate_component(component):
-                raise BadRequest('Invalid request.')
+                raise BadRequest('Invalid component in request.')
 
             operator_id = component.get('operatorId')
             notebook_path = component.get('notebookPath')
@@ -66,10 +66,12 @@ class Pipeline():
 
             if index == 0:
                 # store the first component from pipeline
-                first = Component(self._experiment_id, operator_id, notebook_path, parameters, None)
+                first = Component(self._experiment_id,
+                                  operator_id, notebook_path, parameters, None)
                 previous = first
             else:
-                current_component = Component(self._experiment_id, operator_id, notebook_path, parameters, previous)
+                current_component = Component(
+                    self._experiment_id, operator_id, notebook_path, parameters, previous)
                 previous.set_next_component(current_component)
                 previous = current_component
 
@@ -85,18 +87,19 @@ class Pipeline():
         component = self._first
 
         while component:
-            specs.append(component.create_component_spec())
+            specs.append(component.create_component_spec(
+                self._dataset, self._target))
             component = component.next
 
         return ",".join(specs)
 
     def _create_graph_json(self):
-        """Create a KubeFlow Graph in JSON format from this pipeline. 
-        
+        """Create a KubeFlow Graph in JSON format from this pipeline.
+
         Returns:
             A string in JSON format describing this pipeline.
         """
-        return self.first.create_component_graph()
+        return self._first.create_component_graph()
 
     def compile_train_pipeline(self):
         """Compile the pipeline in a train format."""
@@ -120,7 +123,7 @@ class Pipeline():
                 prev = component
                 component = component.next
 
-        compiler.Compiler().compile(train_pipeline, 'result.tar.gz')
+        compiler.Compiler().compile(train_pipeline, self._experiment_id + '.tar.gz')
 
     def compile_deploy_pipeline(self):
         """Compile pipeline in a deploy format."""
@@ -128,9 +131,7 @@ class Pipeline():
         graph = self._create_graph_json()
 
         @dsl.pipeline(name='Common Seldon Deployment.')
-        def deploy_pipeline(
-            experiment_id: str = "",
-        ):  
+        def deploy_pipeline(experiment_id=''):
             seldonserving = SELDON_DEPLOYMENT.substitute({
                 "experimentId": experiment_id,
                 "componentSpecs": component_specs,
@@ -143,20 +144,22 @@ class Pipeline():
                 k8s_resource=seldon_deployment,
                 success_condition="status.state == Available"
             )
-        
-        compiler.Compiler().compile(deploy_pipeline, 'deploy.tar.gz')
 
-    def upload_pipeline(self):
-        """Upload this pipeline to KubeFlow instance."""
-        upload = self._client.upload_pipeline('deploy.tar.gz', self._experiment_id)
+            component = self._first
+            while component:
+                component.build_component(self._dataset, self._target)
+                serve_op.after(component.build)
+                component = component.next
+
+        compiler.Compiler().compile(deploy_pipeline, self._experiment_id + '.tar.gz')
 
     def run_pipeline(self):
         """Run this pipeline on the KubeFlow instance. 
-        
+
         Returns:
             KubeFlow run object.
         """
-        run = self._client.run_pipeline(self._experiment.id, 'result',
-                                       'result.tar.gz')
+        run = self._client.run_pipeline(self._experiment.id, self._experiment_id,
+                                        self._experiment_id + '.tar.gz')
 
         return run.id

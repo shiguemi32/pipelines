@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, NotFound
 
-from .pipelineClient import init_pipeline_client
 from .pipeline import Pipeline
-from .utils import format_pipeline_run_details
+from .utils import init_pipeline_client, format_pipeline_run_details
+
 
 def train_pipeline(pipeline_parameters):
     """Compile and run a train pipeline.
@@ -29,9 +29,7 @@ def train_pipeline(pipeline_parameters):
         )
 
     pipeline = Pipeline(experiment_id, components, dataset, target)
-
     pipeline.compile_train_pipeline()
-
     return pipeline.run_pipeline()
 
 
@@ -47,13 +45,16 @@ def train_pipeline_status(experiment_id):
     run_details = ''
     try:
         client = init_pipeline_client()
+
         experiment = client.get_experiment(experiment_name=experiment_id)
-        experiment_runs = client.list_runs(page_size='1', sort_by='created_at desc', experiment_id=experiment.id)
+        experiment_runs = client.list_runs(
+            page_size='1', sort_by='created_at desc', experiment_id=experiment.id)
 
         run = experiment_runs.runs[0]
+
         run_id = run.id
         run_details = client.get_run(run_id)
     except Exception:
-        raise BadRequest('Not found run with id: {}'.format())
+        return {}
 
     return format_pipeline_run_details(run_details)
