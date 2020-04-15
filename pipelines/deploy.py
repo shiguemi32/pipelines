@@ -61,7 +61,7 @@ def get_deploys():
 
 
 def get_deployment_log(pod_name):
-    config.load_kube_config()
+    config.load_incluster_config()
     v1 = client.CoreV1Api()
     try:
         return v1.read_namespaced_pod_log(pod_name, 'kubeflow', pretty='true', tail_lines=512, timestamps=True)
