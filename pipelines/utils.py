@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*-
 import json
+import re
 
-from re import sub
+from os import getenv
 from unicodedata import normalize
+
+from kfp import compiler, dsl, Client
 from schema import Schema, SchemaError, Use, Or, Optional
+from werkzeug.exceptions import BadRequest
 
-def normalize_string(string):
-    # Normalize string
-    normalized = (normalize("NFD", string)
-                  .encode("ascii", "ignore")
-                  .decode("utf-8")
-                  .lower())
 
-    # Remove invalid chars
-    normalized = sub(r'([^\w\s]|_)+(?=\s|$)', '', normalized)
-    normalized = sub('[^A-Za-z0-9]+', '_', normalized)
+def init_pipeline_client():
+    """Create a new kfp client. 
 
-    return normalized
+    Returns:
+        An instance of kfp client.
+    """
+    return Client(getenv("KF_PIPELINES_ENDPOINT", '0.0.0.0:31380/pipeline'))
+
 
 parameter_schema = Schema({
     'name': str,
@@ -24,6 +25,7 @@ parameter_schema = Schema({
     'value': Or(str, int, float),
     Optional('description'): str
 })
+
 
 def validate_parameters(parameters):
     try:
@@ -33,11 +35,13 @@ def validate_parameters(parameters):
     except SchemaError:
         return False
 
+
 component_schema = Schema({
-    'component_name': str,
-    'notebook_path': str,
-    Optional('parameters'): list    
+    'operatorId': str,
+    'notebookPath': str,
+    Optional('parameters'): list
 })
+
 
 def validate_component(component):
     try:
@@ -45,6 +49,16 @@ def validate_component(component):
         return True
     except SchemaError:
         return False
+
+
+def validate_notebook_path(notebook_path):
+    if re.search('\Aminio://', notebook_path):
+        return re.sub('minio://', 's3://', notebook_path, 1)
+    elif re.search('\As3:/', notebook_path):
+        return notebook_path
+    else:
+        raise BadRequest('Invalid notebook path. ' + notebook_path)
+
 
 def format_pipeline_run(run):
     # format run response
@@ -66,7 +80,8 @@ def format_pipeline_run(run):
         resp_pipeline_spec['pipelineId'] = pipeline_spec.pipeline_id
         resp_pipeline_spec['pipelineManifest'] = pipeline_spec.pipeline_manifest
         resp_pipeline_spec['pipelineName'] = pipeline_spec.pipeline_name
-        resp_pipeline_spec['workflowManifest'] = json.loads(pipeline_spec.workflow_manifest)
+        resp_pipeline_spec['workflowManifest'] = json.loads(
+            pipeline_spec.workflow_manifest)
         parameters = []
         if pipeline_spec.parameters is not None:
             for parameter in pipeline_spec.parameters:
@@ -85,7 +100,7 @@ def format_pipeline_run(run):
             _metric = {
                 'format':  metric.format,
                 'name': metric.name,
-                'nodeId':metric.node_id,
+                'nodeId': metric.node_id,
                 'numberValue': metric.number_value
             }
             metrics.append(_metric)
@@ -105,22 +120,25 @@ def format_pipeline_run(run):
             }
             resource_references.append(_reference)
     resp_run['resourceReferences'] = resource_references
-    
+
     return resp_run
 
+
 def format_pipeline_run_details(run_details):
-    # format pipeline_runtime response
-    pipeline_runtime = run_details.pipeline_runtime
-    resp_pipeline_runtime = {}
-    resp_pipeline_runtime['pipelineManifest'] = pipeline_runtime.pipeline_manifest
-    resp_pipeline_runtime['workflowManifest'] = json.loads(pipeline_runtime.workflow_manifest)
+    run = run_details.run
 
-    # format run response
-    run = run_details.run 
-    resp_run = format_pipeline_run(run)
+    workflow_manifest = json.loads(
+        run_details.pipeline_runtime.workflow_manifest)
+    nodes = workflow_manifest['status']['nodes']
 
-    # format run detail response
-    resp_run_detail = {}
-    resp_run_detail['pipelineRuntime'] = resp_pipeline_runtime
-    resp_run_detail['run'] = resp_run
-    return resp_run_detail
+    pipeline_status = ''
+    components_status = {}
+
+    for index, component in enumerate(nodes.values()):
+        if index == 0:
+            pipeline_status = component['phase']
+        else:
+            components_status[str(component['displayName'])[
+                7:]] = str(component['phase'])
+
+    return {"status": components_status}

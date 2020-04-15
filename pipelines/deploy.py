@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from werkzeug.exceptions import BadRequest
 
-from .pipelineClient import init_pipeline_client
 from .pipeline import Pipeline
-from .utils import format_pipeline_run
+from .utils import init_pipeline_client, format_pipeline_run
+
 
 def deploy_pipeline(pipeline_parameters):
     """Compile and run a deployment pipeline.
@@ -16,7 +16,7 @@ def deploy_pipeline(pipeline_parameters):
             target (str): target column from dataset.
     """
     try:
-        experiment_id = pipeline_parameters['experiment_id']
+        experiment_id = pipeline_parameters['experimentId']
         components = pipeline_parameters['components']
         dataset = pipeline_parameters['dataset']
         target = pipeline_parameters['target']
@@ -25,11 +25,10 @@ def deploy_pipeline(pipeline_parameters):
             'Invalid request body, missing the parameter: {}'.format(e)
         )
 
-    pipeline = Pipeline(experiment_id, components)
-
+    pipeline = Pipeline(experiment_id, components, dataset, target)
     pipeline.compile_deploy_pipeline()
-    
-    pipeline.upload_pipeline()
+    return pipeline.run_pipeline()
+
 
 def get_deploys():
     """Get deploy list.
@@ -41,7 +40,8 @@ def get_deploys():
     runs = []
     token = ''
     while True:
-        list_runs = client.list_runs(page_token=token, sort_by='created_at desc', page_size=100)
+        list_runs = client.list_runs(
+            page_token=token, sort_by='created_at desc', page_size=100)
         if list_runs.runs is not None:
             for run in list_runs.runs:
                 # check if run is type deployment

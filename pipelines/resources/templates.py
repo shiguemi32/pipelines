@@ -1,6 +1,21 @@
 # -*- coding: utf-8 -*-
 from string import Template
 
+PAPERMILL_YAML = Template("""
+name: $operatorName
+description: Parametrize and execute Jupyter notebooks
+inputs:
+- { name: Experiment Id, type: String, default: "", description: "" }
+- { name: Notebook Path, type: String, default: "", description: "" }
+- { name: Dataset, type: String, default: "", description: "" }
+- { name: Target, type: String, default: "", description: "" }
+- { name: Out Dataset, type: String, default: "", description: "" }
+implementation:
+    container:
+        image: platiagro/datascience-1386e2046833-notebook-cpu:0.0.2
+        command: [ papermill, { inputValue: Notebook Path }, -, -p, experiment_id, { inputValue: Experiment Id }, -p, dataset, { inputValue: Dataset }, -p, target, { inputValue: Target }, -p, out_dataset, { inputValue: Out Dataset }, $parameters]
+""")
+
 SELDON_DEPLOYMENT = Template("""{
     "apiVersion": "machinelearning.seldon.io/v1alpha2",
     "kind": "SeldonDeployment",
@@ -51,7 +66,7 @@ COMPONENT_SPEC = Template("""
                 "image": "$image",
                 "name": "$name",
                 "env": [
-                    
+                    {"PARAMETERS": "$parameters"}
                 ]
             }
         ]
