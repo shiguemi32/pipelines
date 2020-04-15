@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from werkzeug.exceptions import BadRequest
+from kubernetes import client, config
+from kubernetes.client import Configuration, ApiClient
 
 from .pipeline import Pipeline
 from .utils import init_pipeline_client, format_pipeline_run
@@ -56,3 +58,13 @@ def get_deploys():
         else:
             break
     return {'runs': runs}
+
+
+def get_deployment_log(pod_name):
+    config.load_kube_config()
+    v1 = client.CoreV1Api()
+    try:
+        return v1.read_namespaced_pod_log(pod_name, 'kubeflow', pretty='true', tail_lines=512, timestamps=True)
+    except Exception as e:
+        raise BadRequest('Invalid pod name: {}'.format(e))
+    

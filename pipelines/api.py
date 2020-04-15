@@ -8,7 +8,7 @@ from flask_cors import CORS
 from werkzeug.exceptions import BadRequest, InternalServerError
 
 from .train import train_pipeline, train_pipeline_status
-from .deploy import deploy_pipeline, get_deploys
+from .deploy import deploy_pipeline, get_deploys, get_deployment_log
 
 app = Flask(__name__)
 
@@ -45,6 +45,13 @@ def handle_deploy_pipeline():
     req_data = request.get_json()
     run_id = deploy_pipeline(req_data)
     return jsonify({"message": "Pipeline running.", "runId": run_id})
+
+
+@app.route("/deployments/<pod_name>/logs", methods=["GET"])
+def handle_get_deployment_log(pod_name):
+    """Handles GET requests to "/deployments/<pod_name>/logs."""
+    log = get_deployment_log(pod_name)
+    return jsonify({"log": log})
 
 
 @app.errorhandler(BadRequest)
