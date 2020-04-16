@@ -64,7 +64,7 @@ def get_deployment_log(pod_name):
     config.load_incluster_config()
     v1 = client.CoreV1Api()
     try:
-        return v1.read_namespaced_pod_log(pod_name, 'kubeflow', pretty='true', tail_lines=512, timestamps=True)
+        return v1.read_namespaced_pod_log(pod_name, 'anonymous', pretty='true', tail_lines=512, timestamps=True)
     except Exception as e:
         raise BadRequest('Invalid pod name: {}'.format(e))
     
