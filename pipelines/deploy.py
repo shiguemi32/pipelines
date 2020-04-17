@@ -82,7 +82,17 @@ def get_deployment_log(parameters):
     config.load_incluster_config()
     v1 = client.CoreV1Api()
     try:
-        return v1.read_namespaced_pod_log(pod, 'anonymous', container=container, pretty='true', tail_lines=512, timestamps=True)
+        namespace = 'anonymous'
+
+        # get full pod name
+        pods = v1.list_namespaced_pod(namespace)
+        for i in pods.items:
+            pod_name = i.metadata.name
+            if pod_name.startswith(pod):
+                pod = pod_name
+                break
+
+        return v1.read_namespaced_pod_log(pod, namespace, container=container, pretty='true', tail_lines=512, timestamps=True)
     except ApiException as e:
         body = json.loads(e.body)
         error_message = body['message']
