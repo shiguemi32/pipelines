@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+import json
+
 from werkzeug.exceptions import BadRequest
 from kubernetes import client, config
 from kubernetes.client import Configuration, ApiClient
+from kubernetes.client.rest import ApiException
 
 from .pipeline import Pipeline
 from .utils import init_pipeline_client, format_pipeline_run
@@ -60,11 +63,28 @@ def get_deploys():
     return {'runs': runs}
 
 
-def get_deployment_log(pod_name):
+def get_deployment_log(parameters):
+    """Get logs from deployment.
+
+    Args:
+        parameters (dict): request body json, format:
+            pod (str): pod name.
+            container (str): container name.
+    """
+    try:
+        pod = parameters['pod']
+        container = parameters['container']
+    except KeyError as e:
+        raise BadRequest(
+            'Invalid request body, missing the parameter: {}'.format(e)
+        )
+
     config.load_incluster_config()
     v1 = client.CoreV1Api()
     try:
-        return v1.read_namespaced_pod_log(pod_name, 'anonymous', pretty='true', tail_lines=512, timestamps=True)
-    except Exception as e:
-        raise BadRequest('Invalid pod name: {}'.format(e))
+        return v1.read_namespaced_pod_log(pod, 'anonymous', container=container, pretty='true', tail_lines=512, timestamps=True)
+    except ApiException as e:
+        body = json.loads(e.body)
+        error_message = body['message']
+        raise BadRequest('{}'.format(error_message))
     

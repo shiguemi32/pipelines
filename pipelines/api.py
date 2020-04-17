@@ -47,10 +47,11 @@ def handle_deploy_pipeline():
     return jsonify({"message": "Pipeline running.", "runId": run_id})
 
 
-@app.route("/deployments/<pod_name>/logs", methods=["GET"])
-def handle_get_deployment_log(pod_name):
-    """Handles GET requests to "/deployments/<pod_name>/logs."""
-    log = get_deployment_log(pod_name)
+@app.route("/deployments/logs", methods=["GET"])
+def handle_get_deployment_log():
+    """Handles GET requests to "/deployments/logs."""
+    req_data = request.get_json()
+    log = get_deployment_log(req_data)
     return jsonify({"log": log})
 
 
