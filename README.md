@@ -1,17 +1,14 @@
 # PlatIAgro Pipelines
 
-## Introduction
-
-[![Build Status](https://travis-ci.com/platiagro/pipelines.svg?branch=master)](https://travis-ci.com/platiagro/pipelines)
+[![Build Status](https://github.com/platiagro/pipelines/workflows/Python%20application/badge.svg)](https://github.com/platiagro/pipelines/actions?query=workflow%3A%22Python+application%22)
 [![codecov](https://codecov.io/gh/platiagro/pipelines/branch/master/graph/badge.svg)](https://codecov.io/gh/platiagro/pipelines)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Gitter](https://badges.gitter.im/platiagro/community.svg)](https://gitter.im/platiagro/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-
-PlatIAgro Pipelines microservice.
+[![Known Vulnerabilities](https://snyk.io/test/github/platiagro/pipelines/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/platiagro/pipelines?targetFile=requirements.txt)
 
 ## Requirements
 
-You can run the application locally or in a docker container, the requirements for each setup are listed below.
+You may start the server locally or using a docker container, the requirements for each setup are listed below.
 
 ### Local
 
@@ -23,15 +20,15 @@ You can run the application locally or in a docker container, the requirements f
 
 ## Quick Start
 
-Make sure you have all requirements installed on your computer, then you may run the server in a [docker container](#run-docker) or in your [local machine](#run-local).<br>
+Make sure you have all requirements installed on your computer. Then, you may start the server using either a [Docker container](#run-using-docker) or in your [local machine](#run-local).
 
 ### Run Docker
 
 Run it :
 
 ```bash
-$ docker build -t platiagro/pipelines:0.0.1 .
-$ docker run -it -p 8080:8080 platiagro/pipelines:0.0.1
+$ docker build -t platiagro/pipelines:0.0.2 .
+$ docker run -it -p 8080:8080 platiagro/pipelines:0.0.2
 ```
 
 ### Run Local:
@@ -45,56 +42,23 @@ $ python -m pipelines.api
 
 ## Testing
 
-Firstly install the requirements:
+Install the testing requirements:
 
 ```bash
-$ pip install .[testing]
+pip install .[testing]
 ```
 
-Then run all the tests:
+Use the following command to run all tests:
 
 ```bash
-$ pytest
+pytest
 ```
 
-## API
+Use the following command to run lint:
 
-API usage examples.
-
-### Train Pipeline
-
-method: POST
-url: /v1/pipelines
-
+```bash
+flake8
 ```
-curl -X POST \
-  http://localhost:8080/pipelines \
-  --H 'content-type: application/json' \
-  --d '{
-	"experiment_id": "b1596851-3951-42ea-bd60-6b7e9ef25d72",
-	"csv": "dataset.csv",
-	"txt": "header.txt",
-	"components": [
-		{
-			"component_name": "Filter",
-		 	"notebook_path": "Filter.ipynb",
-		},
-		{
-			"component_name": "AutoML",
-		 	"notebook_path": "AutoML.ipynb"
-            "parameters": [
-                {
-                    "name": "price",
-                    "type": "Int",
-                    "value": "3"
-                }
-            ]
-        }
-	]
-}'
-```
-
-This endpoint creates a pipeline following the components list order.
 
 ## API
 
