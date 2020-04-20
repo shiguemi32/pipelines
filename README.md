@@ -22,22 +22,53 @@ You may start the server locally or using a docker container, the requirements f
 
 Make sure you have all requirements installed on your computer. Then, you may start the server using either a [Docker container](#run-using-docker) or in your [local machine](#run-local).
 
-### Run Docker
+### Run using Docker
 
-Run it :
+Export this environment variable:
 
 ```bash
-$ docker build -t platiagro/pipelines:0.0.2 .
-$ docker run -it -p 8080:8080 platiagro/pipelines:0.0.2
+export KF_PIPELINES_ENDPOINT=0.0.0.0:31380/pipeline
+```
+
+Build a docker image that launches the API server:
+
+```bash
+docker build -t platiagro/pipelines:0.0.2 .
+```
+
+Finally, start the API server:
+
+```bash
+docker run -it -p 8080:8080 \
+  --name pipelines \
+  platiagro/pipelines:0.0.2
 ```
 
 ### Run Local:
 
-Run it :
+Export this environment variable:
 
 ```bash
-$ pip install .
-$ python -m pipelines.api
+export KF_PIPELINES_ENDPOINT=0.0.0.0:31380/pipeline
+```
+
+(Optional) Create a virtualenv:
+
+```bash
+virtualenv -p python3 venv
+. venv/bin/activate
+```
+
+Install Python modules:
+
+```bash
+pip install .
+```
+
+Then, start the API server:
+
+```bash
+python -m pipelines.api.main
 ```
 
 ## Testing
