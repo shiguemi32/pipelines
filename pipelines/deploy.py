@@ -63,21 +63,18 @@ def get_deploys():
     return {'runs': runs}
 
 
-def get_deployment_log(parameters):
+def get_deployment_log(pod, container):
     """Get logs from deployment.
 
     Args:
-        parameters (dict): request body json, format:
-            pod (str): pod name.
-            container (str): container name.
+        pod (str): pod name.
+        container (str): container name.
     """
-    try:
-        pod = parameters['pod']
-        container = parameters['container']
-    except KeyError as e:
-        raise BadRequest(
-            'Invalid request body, missing the parameter: {}'.format(e)
-        )
+    if not pod:    
+        raise BadRequest('Missing the parameter: pod')
+
+    if not container:    
+        raise BadRequest('Missing the parameter: container') 
 
     config.load_incluster_config()
     v1 = client.CoreV1Api()
