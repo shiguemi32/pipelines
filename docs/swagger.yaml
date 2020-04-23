@@ -46,6 +46,29 @@ paths:
           $ref: "#/components/responses/InternalServerError"
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
+  /deployments/logs:
+    get:
+      summary: "Get logs from deployment."
+      tags:
+        - "Deploy"
+      parameters:
+        - name: pod
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: container
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/Log"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
   /train/<run_id>:
     get:
       summary: "Get the run status."
@@ -93,6 +116,11 @@ components:
           type: boolean
         path:
           type: object
+    Log:
+      type: object
+      properties:
+        log:
+          type: string
     Parameter:
       type: object
       properties:
@@ -387,6 +415,12 @@ components:
               target:
                 type: string
   responses:
+    Log:
+      description: ""
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Log"
     Run:
       description: ""
       content:
