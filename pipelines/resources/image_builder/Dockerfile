@@ -1,4 +1,4 @@
-FROM python:3.6-buster
+FROM jupyter/datascience-notebook:1386e2046833
 
 COPY . /app
 WORKDIR /app
