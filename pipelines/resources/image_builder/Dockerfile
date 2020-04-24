@@ -1,4 +1,4 @@
-FROM platiagro/datascience-1386e2046833-notebook-cpu:0.0.2
+FROM python:3.6-buster
 
 COPY . /app
 WORKDIR /app
