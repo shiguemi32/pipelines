@@ -1,5 +1,5 @@
-#!/bin/sh
+#!/bin/bash
 # Read in the file of environment settings
-. env
+source ./env.sh
 # Then run the CMD
 exec "$@"
