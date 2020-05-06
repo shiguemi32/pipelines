@@ -1,7 +1,9 @@
 #!/bin/bash
 
-curl -v -X PUT http://server.anonymous:80/notebook/anonymous/server/api/contents/experiments/ -b "_xsrf: token" -H "Content-Type: application/json" -H "X-XSRFToken: token"
-curl -v -X PUT http://server.anonymous:80/notebook/anonymous/server/api/contents/experiments/$1/ -b "_xsrf: token" -H "Content-Type: application/json" -H "X-XSRFToken: token"
-curl -v -X PUT http://server.anonymous:80/notebook/anonymous/server/api/contents/experiments/$1/operators/ -b "_xsrf: token" -H "Content-Type: application/json" -H "X-XSRFToken: token"
-curl -v -X PUT http://server.anonymous:80/notebook/anonymous/server/api/contents/experiments/$1/operators/$2 -b "_xsrf: token" -H "Content-Type: application/json" -H "X-XSRFToken: token"
-curl -v -X PUT http://server.anonymous:80/notebook/anonymous/server/api/contents/experiments/$1/operators/$2/Inference.ipynb -b "_xsrf: token" -H "Content-Type: application/json" -H "X-XSRFToken: token" --data @output.ipynb
+content=$(cat output.ipynb)
+
+curl -v -X PUT http://server.anonymous:80/notebook/anonymous/server/api/contents/experiments -H 'Content-Type: application/json' -H 'X-XSRFToken: token' -H 'Cookie: _xsrf=token' --data '{"type":"directory"}'
+curl -v -X PUT http://server.anonymous:80/notebook/anonymous/server/api/contents/experiments/$1 -H 'Content-Type: application/json' -H 'X-XSRFToken: token' -H 'Cookie: _xsrf=token' --data '{"type":"directory"}'
+curl -v -X PUT http://server.anonymous:80/notebook/anonymous/server/api/contents/experiments/$1/operators -H 'Content-Type: application/json' -H 'X-XSRFToken: token' -H 'Cookie: _xsrf=token' --data '{"type":"directory"}'
+curl -v -X PUT http://server.anonymous:80/notebook/anonymous/server/api/contents/experiments/$1/operators/$2 -H 'Content-Type: application/json' -H 'X-XSRFToken: token' -H 'Cookie: _xsrf=token' --data '{"type":"directory"}'
+curl -v -X PUT http://server.anonymous:80/notebook/anonymous/server/api/contents/experiments/$1/operators/$2/Inference.ipynb 'Content-Type: application/json' -H 'X-XSRFToken: token' -H 'Cookie: _xsrf=token' --data "{\"type\":\"notebook\", \"content\":$content}"
