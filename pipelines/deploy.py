@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import json
+
 from werkzeug.exceptions import BadRequest
 from kubernetes import client, config
-from kubernetes.client import Configuration, ApiClient
 from kubernetes.client.rest import ApiException
+
 from .pipeline import Pipeline
 from .utils import init_pipeline_client
 
