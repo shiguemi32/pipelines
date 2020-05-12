@@ -40,7 +40,7 @@ def get_deploys():
     Returns:
         Deploy list.
     """
-    res = {}
+    res = []
 
     client = init_pipeline_client()
 
@@ -52,13 +52,14 @@ def get_deploys():
     for run in list_runs:
         manifest = run.pipeline_spec.workflow_manifest
         if 'SeldonDeployment' in manifest:
-            res[run.name] = {
+            res.append({
+                'uuid': run.name,
                 'status': run.status,
                 'url':
                     'http://{}/seldon/anonymous/{}/api/v1.0/predictions'.format(
                         ip, 'deploy-' + run.name) if run.status == 'Succeeded' else None,
                 'createdAt': run.created_at
-            }
+            })
 
     return res
 
