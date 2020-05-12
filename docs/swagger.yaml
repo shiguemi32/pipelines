@@ -94,17 +94,15 @@ components:
           type: string
           format: uuid
     Deploys:
-      type: object
-      additionalProperties:
+      type: array
+      items:
         $ref: "#/components/schemas/DeployStatus"
-      example:
-        $EXPERIMENT_ID:
-          createdAt: "Tue, 28 Apr 2020 20:31:36 GMT"
-          status: "Failed"
-          url: "http://127.0.1.1/seldon/anonymous/deploy-fb1cf7ed-306c-43bd-85ec-838f0ff11ebk/api/v1.0/predictions"
     DeployStatus:
       type: object
       properties:
+        uuid:
+          type: string
+          format: uuid
         status:
           type: string
         url:
