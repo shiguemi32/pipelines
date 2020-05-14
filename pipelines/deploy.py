@@ -41,25 +41,31 @@ def get_deploys():
         Deploy list.
     """
     res = []
-
     client = init_pipeline_client()
+    runs = client.list_runs(sort_by='created_at').runs
 
-    list_runs = client.list_runs(sort_by='created_at').runs
+    # Get cluster Ip
+    try:
+        config.load_incluster_config()
+        v1 = client.CoreV1Api()
+        service = v1.read_namespaced_service(
+            name='istio-ingressgateway', namespace='istio-system')
+        ip = service.status.load_balancer.ingress[0].ip
+    except:
+        ip = ""
 
-    import socket
-    ip = socket.gethostbyname(socket.gethostname())
-
-    for run in list_runs:
-        manifest = run.pipeline_spec.workflow_manifest
-        if 'SeldonDeployment' in manifest:
-            res.append({
-                'uuid': run.name,
-                'status': run.status,
-                'url':
-                    'http://{}/seldon/anonymous/{}/api/v1.0/predictions'.format(
-                        ip, 'deploy-' + run.name) if run.status == 'Succeeded' else None,
-                'createdAt': run.created_at
-            })
+    if runs:
+        for run in runs:
+            manifest = run.pipeline_spec.workflow_manifest
+            if 'SeldonDeployment' in manifest:
+                res.append({
+                    'uuid': run.name,
+                    'status': run.status,
+                    'url':
+                        'http://{}/seldon/anonymous/{}/api/v1.0/predictions'.format(
+                            ip, 'deploy-' + run.name) if run.status == 'Succeeded' else None,
+                    'createdAt': run.created_at
+                })
 
     return res
 
