@@ -64,7 +64,7 @@ def get_deploys():
                     'status': run.status,
                     'url':
                         'http://{}/seldon/anonymous/{}/api/v1.0/predictions'.format(
-                            ip, 'deploy-' + run.name) if run.status == 'Succeeded' else None,
+                            ip, 'deploy-' + run.name),
                     'createdAt': run.created_at
                 })
 
