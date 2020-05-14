@@ -59,7 +59,8 @@ def get_deploys():
             manifest = run.pipeline_spec.workflow_manifest
             if 'SeldonDeployment' in manifest:
                 res.append({
-                    'uuid': run.name,
+                    'experimentId': run.resource_references[0].name,
+                    'name': run.name,
                     'status': run.status,
                     'url':
                         'http://{}/seldon/anonymous/{}/api/v1.0/predictions'.format(

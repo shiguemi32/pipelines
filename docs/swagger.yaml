@@ -100,9 +100,11 @@ components:
     DeployStatus:
       type: object
       properties:
-        uuid:
+        experimentId:
           type: string
           format: uuid
+        name:
+          type: string
         status:
           type: string
         url:
