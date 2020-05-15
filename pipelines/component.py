@@ -66,7 +66,9 @@ class Component():
     def _create_component_yaml(self):
         yaml_template = yaml.load(PAPERMILL_YAML.substitute({
             'operatorName': 'PlatIA-' + self._operator_id,
-            'parameters': self._create_parameters_papermill()
+            'parameters': self._create_parameters_papermill(),
+            'experimentId': self._experiment_id,
+            'operatorId': self._operator_id,
         }), Loader=yaml.FullLoader)
 
         file_name = '{}.yaml'.format(self._operator_id)
