@@ -11,7 +11,7 @@ from .pipeline import Pipeline
 from .utils import init_pipeline_client, is_date
 
 
-def deploy_pipeline(pipeline_parameters):
+def create_deployment(pipeline_parameters):
     """Compile and run a deployment pipeline.
 
     Args:
@@ -32,15 +32,15 @@ def deploy_pipeline(pipeline_parameters):
         )
 
     pipeline = Pipeline(experiment_id, components, dataset, target)
-    pipeline.compile_deploy_pipeline()
+    pipeline.compile_deployment_pipeline()
     return pipeline.run_pipeline()
 
 
-def get_deploys():
-    """Get deploy list.
+def get_deployments():
+    """Get deployments list.
 
     Returns:
-        Deploy list.
+        Deployments list.
     """
     res = []
     client = init_pipeline_client()
@@ -66,7 +66,7 @@ def get_deploys():
                     'status': run.status,
                     'url':
                         'http://{}/seldon/anonymous/{}/api/v1.0/predictions'.format(
-                            ip, 'deploy-' + run.name),
+                            ip, 'deployment-' + run.name),
                     'createdAt': run.created_at
                 })
 
@@ -75,7 +75,6 @@ def get_deploys():
 
 def get_deployment_log(experiment_id):
     """Get logs from deployment.
-
     Args:
         experiment_id (str): PlatIAgro experiment's uuid.
     """

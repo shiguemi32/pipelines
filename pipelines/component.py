@@ -6,7 +6,7 @@ from json import dumps
 from kfp import components, dsl
 from kubernetes import client as k8s_client
 
-from .utils import init_pipeline_client, validate_notebook_path
+from .utils import validate_notebook_path
 from .resources.templates import PAPERMILL_YAML, COMPONENT_SPEC, GRAPH
 
 

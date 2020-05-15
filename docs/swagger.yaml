@@ -11,32 +11,32 @@ info:
 servers:
   - url: http://localhost:8080
 tags:
-  - name: "Deploy"
+  - name: "Deployment"
     description: >
-      Deploy is an inference notebook.
-  - name: "Train"
+      Manage deployment notebooks.
+  - name: "Training"
     description: >
-      Train is a training notebook.
+      Manage training notebooks.
 paths:
-  /deploys:
+  /deployments:
     get:
-      summary: "List all deploys."
+      summary: "List all deployments."
       tags:
-        - "Deploy"
+        - "Deployment"
       responses:
         "200":
-          $ref: "#/components/responses/Deploys"
+          $ref: "#/components/responses/Deployments"
         "500":
           $ref: "#/components/responses/InternalServerError"
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
-  /deploy:
+  /deployment:
     post:
       summary: "Run a deployment pipeline"
       tags:
-        - "Deploy"
+        - "Deployment"
       requestBody:
-        $ref: "#/components/requestBodies/DeployPost"
+        $ref: "#/components/requestBodies/DeploymentPost"
       responses:
         "200":
           $ref: "#/components/responses/Run"
@@ -50,7 +50,7 @@ paths:
     get:
       summary: "Get logs from deployment."
       tags:
-        - "Deploy"
+        - "Deployment"
       parameters:
         - name: experimentId
           in: query
@@ -59,16 +59,16 @@ paths:
             type: string
       responses:
         "200":
-          $ref: "#/components/responses/DeployLog"
+          $ref: "#/components/responses/DeploymentLog"
         "500":
           $ref: "#/components/responses/InternalServerError"
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
-  /train/<run_id>:
+  /training/<run_id>:
     get:
-      summary: "Get the run status."
+      summary: "Get the training run status."
       tags:
-        - "Train"
+        - "Training"
       parameters:
         - name: run_id
           in: path
@@ -77,20 +77,20 @@ paths:
             type: string
       responses:
         "200":
-          $ref: "#/components/responses/TrainStatus"
+          $ref: "#/components/responses/TrainingStatus"
         "400":
           $ref: "#/components/responses/BadRequest"
         "500":
           $ref: "#/components/responses/InternalServerError"
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
-  /train:
+  /training:
     post:
-      summary: "Run a train pipeline"
+      summary: "Run a training pipeline"
       tags:
-        - "Train"
+        - "Training"
       requestBody:
-        $ref: "#/components/requestBodies/TrainPost"
+        $ref: "#/components/requestBodies/TrainingPost"
       responses:
         "200":
           $ref: "#/components/responses/Run"
@@ -102,7 +102,35 @@ paths:
           $ref: "#/components/responses/ServiceUnavailable"
 components:
   schemas:
-    DeployLog:
+    Run:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Pipeline running."
+        runId:
+          type: string
+          format: uuid
+    Deployments:
+      type: array
+      items:
+        $ref: "#/components/schemas/DeploymentStatus"
+    DeploymentStatus:
+      type: object
+      properties:
+        experimentId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        status:
+          type: string
+        url:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    DeploymentLog:
       type: array
       items:
         type: object
@@ -123,35 +151,7 @@ components:
           type: string
         timestamp:
           type: string
-    Run:
-      type: object
-      properties:
-        message:
-          type: string
-          example: "Pipeline running."
-        runId:
-          type: string
-          format: uuid
-    Deploys:
-      type: array
-      items:
-        $ref: "#/components/schemas/DeployStatus"
-    DeployStatus:
-      type: object
-      properties:
-        experimentId:
-          type: string
-          format: uuid
-        name:
-          type: string
-        status:
-          type: string
-        url:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-    TrainStatus:
+    TrainingStatus:
       type: object
       properties:
         status:
@@ -162,7 +162,7 @@ components:
             c9a4e6a05-a788-4efa-b94b-693e28608618: "Succeeded"
             caadb1d13-0666-4d84-a365-356b258e4433: "Succeeded"
   requestBodies:
-    DeployPost:
+    DeploymentPost:
       content:
         application/json:
           schema:
@@ -178,7 +178,7 @@ components:
                 type: string
               target:
                 type: string
-    TrainPost:
+    TrainingPost:
       content:
         application/json:
           schema:
@@ -195,30 +195,30 @@ components:
               target:
                 type: string
   responses:
-    DeployLog:
+    DeploymentLog:
       description: ""
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/DeployLog"
+            $ref: "#/components/schemas/DeploymentLog"
     Run:
       description: ""
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Run"
-    Deploys:
+    Deployments:
       description: ""
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Deploys"
-    TrainStatus:
+            $ref: "#/components/schemas/Deployments"
+    TrainingStatus:
       description: ""
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/TrainStatus"
+            $ref: "#/components/schemas/TrainingStatus"
     Message:
       description: ""
       content:
