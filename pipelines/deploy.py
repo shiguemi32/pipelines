@@ -8,7 +8,7 @@ from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
 from .pipeline import Pipeline
-from .utils import init_pipeline_client, is_date, format_pipeline_run
+from .utils import init_pipeline_client, format_pipeline_run
 
 
 def deploy_pipeline(pipeline_parameters):
@@ -73,7 +73,20 @@ def get_deployment_log(experiment_id):
     if not experiment_id:
         raise BadRequest('Missing the parameter: experimentId')
 
-    regex = re.compile('[-@_!#$%^&*()<>?/|}{~:]')
+    timestamp_with_tz = r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z'
+    timestamp_without_tz = r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d+'
+    timestamp_regex = timestamp_with_tz + '|' + timestamp_without_tz
+
+    log_level = ['INFO', 'WARN', 'ERROR']
+    log_level_regex = r'(?<![\w\d]){}(?![\w\d])'
+    full_log_level_regex = ''
+    for level in log_level:
+        if full_log_level_regex:
+            full_log_level_regex += '|' + log_level_regex.format(level)
+        else:
+            full_log_level_regex = log_level_regex.format(level)
+
+    log_message_regex = r'[a-zA-Z0-9\"\'.\-@_!#$%^&*()<>?\/|}{~:]{1,}'
 
     config.load_incluster_config()
     v1 = client.CoreV1Api()
@@ -90,7 +103,10 @@ def get_deployment_log(experiment_id):
                 break
 
         response = []
-        api_response = v1.read_namespaced_pod(pod_name, namespace, pretty='true')
+        api_response = v1.read_namespaced_pod(
+            pod_name,
+            namespace,
+            pretty='true')
         pod_containers = api_response.spec.containers
         for container in pod_containers:
             name = container.name
@@ -108,26 +124,18 @@ def get_deployment_log(experiment_id):
                 line = buf.readline()
                 while line:
                     line = line.replace('\n', '')
-                    words = line.split()
-                    timestamp = ''
-                    level = ''
-                    message = ''
-                    for word in words:
-                        if len(word) > 4 and is_date(word):
-                            if not timestamp:
-                                timestamp = word
-                            else:
-                                timestamp += ' ' + word
-                        elif 'INFO' in word or 'WARN' in word or 'ERROR' in word:
-                            level = word
-                        else:
-                            if len(word) == 1 and regex.search(word) is not None:
-                                word = ''
-                            if word:
-                                if not message:
-                                    message = word
-                                else:
-                                    message += ' ' + word
+
+                    timestamp = re.findall(timestamp_regex, line)
+                    timestamp = ' '.join([str(x) for x in timestamp])
+                    line = line.replace(timestamp, '')
+
+                    level = re.findall(full_log_level_regex, line)
+                    level = ' '.join([str(x) for x in level])
+                    line = line.replace(level, '')
+
+                    line = re.sub(r'( [-:*]{1})', '', line)
+                    message = re.findall(log_message_regex, line)
+                    message = ' '.join([str(x) for x in message])
 
                     log = {}
                     log['timestamp'] = timestamp
