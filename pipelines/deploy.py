@@ -3,7 +3,7 @@ import io
 import json
 import re
 
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, NotFound
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
@@ -64,14 +64,14 @@ def get_deploys():
     return {'runs': runs}
 
 
-def get_deployment_log(experiment_id):
+def get_deployment_log(deploy_name):
     """Get logs from deployment.
 
     Args:
-        experiment_id (str): PlatIAgro experiment's uuid.
+        deploy_name (str): Deployment name.
     """
-    if not experiment_id:
-        raise BadRequest('Missing the parameter: experimentId')
+    if not deploy_name:
+        raise BadRequest('Missing the parameter: name')
 
     timestamp_with_tz = r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z'
     timestamp_without_tz = r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d+'
@@ -89,67 +89,74 @@ def get_deployment_log(experiment_id):
     log_message_regex = r'[a-zA-Z0-9\"\'.\-@_!#$%^&*()<>?\/|}{~:]{1,}'
 
     config.load_incluster_config()
-    v1 = client.CoreV1Api()
+    custom_api = client.CustomObjectsApi()
+    core_api = client.CoreV1Api()
     try:
         namespace = 'anonymous'
-
-        # get full pod name
-        pod_name = experiment_id
-        pods = v1.list_namespaced_pod(namespace)
-        for i in pods.items:
-            name = i.metadata.name
-            if name.startswith(experiment_id):
-                pod_name = name
-                break
+        api_response = custom_api.get_namespaced_custom_object(
+            'machinelearning.seldon.io',
+            'v1',
+            namespace,
+            'seldondeployments',
+            deploy_name,
+        )
 
         response = []
-        api_response = v1.read_namespaced_pod(
-            pod_name,
-            namespace,
-            pretty='true')
-        pod_containers = api_response.spec.containers
-        for container in pod_containers:
-            name = container.name
-            if name != 'istio-proxy' and name != 'seldon-container-engine':
-                pod_log = v1.read_namespaced_pod_log(
+        for deployment_name in api_response['status']['deploymentStatus'].keys():
+            api_response = core_api.list_namespaced_pod(
+                namespace,
+                label_selector=f'app={deployment_name}'
+            )
+            for i in api_response.items:
+                pod_name = i.metadata.name
+                api_response = core_api.read_namespaced_pod(
                     pod_name,
                     namespace,
-                    container=name,
-                    pretty='true',
-                    tail_lines=512,
-                    timestamps=True)
+                )
+                for container in api_response.spec.containers:
+                    name = container.name
+                    if name != 'istio-proxy' and name != 'seldon-container-engine':
+                        pod_log = core_api.read_namespaced_pod_log(
+                            pod_name,
+                            namespace,
+                            container=name,
+                            pretty='true',
+                            tail_lines=512,
+                            timestamps=True)
 
-                logs = []
-                buf = io.StringIO(pod_log)
-                line = buf.readline()
-                while line:
-                    line = line.replace('\n', '')
+                        logs = []
+                        buf = io.StringIO(pod_log)
+                        line = buf.readline()
+                        while line:
+                            line = line.replace('\n', '')
 
-                    timestamp = re.findall(timestamp_regex, line)
-                    timestamp = ' '.join([str(x) for x in timestamp])
-                    line = line.replace(timestamp, '')
+                            timestamp = re.findall(timestamp_regex, line)
+                            timestamp = ' '.join([str(x) for x in timestamp])
+                            line = line.replace(timestamp, '')
 
-                    level = re.findall(full_log_level_regex, line)
-                    level = ' '.join([str(x) for x in level])
-                    line = line.replace(level, '')
+                            level = re.findall(full_log_level_regex, line)
+                            level = ' '.join([str(x) for x in level])
+                            line = line.replace(level, '')
 
-                    line = re.sub(r'( [-:*]{1})', '', line)
-                    message = re.findall(log_message_regex, line)
-                    message = ' '.join([str(x) for x in message])
+                            line = re.sub(r'( [-:*]{1})', '', line)
+                            message = re.findall(log_message_regex, line)
+                            message = ' '.join([str(x) for x in message])
 
-                    log = {}
-                    log['timestamp'] = timestamp
-                    log['level'] = level
-                    log['message'] = message
-                    logs.append(log)
-                    line = buf.readline()
+                            log = {}
+                            log['timestamp'] = timestamp
+                            log['level'] = level
+                            log['message'] = message
+                            logs.append(log)
+                            line = buf.readline()
 
-                resp = {}
-                resp['containerName'] = name
-                resp['logs'] = logs
-                response.append(resp)
+                        resp = {}
+                        resp['containerName'] = name
+                        resp['logs'] = logs
+                        response.append(resp)
         return response
     except ApiException as e:
         body = json.loads(e.body)
         error_message = body['message']
+        if 'not found' in error_message:
+            raise NotFound('The specified deployment does not exist')
         raise BadRequest('{}'.format(error_message))
